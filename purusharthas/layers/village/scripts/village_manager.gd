@@ -32,12 +32,16 @@ func _init_village_state() -> void:
 		"families": 5,
 		"food_stored": 100.0,
 		"gold": 50.0,
+		"wood": 120.0,
+		"stone": 80.0,
 		"culture_points": 10.0,
 		"morale": 60.0,
 		"trust": 50.0,
 		"trade_connections": 0,
 		"buildings": [],
-		"farm_tiles": []
+		"farm_tiles": [],
+		"map_width": 30,
+		"map_height": 30
 	}
 
 func start_season() -> void:
@@ -66,6 +70,7 @@ func end_season() -> void:
 	current_phase = "event" if not pending_cards.is_empty() else "allocation"
 	village_state_changed.emit()
 	pending_cards_changed.emit(get_pending_cards())
+	SaveSystem.save_game(true)
 
 func get_gram_swaraj_score() -> Dictionary:
 	return gram_swaraj.calculate_score()
@@ -94,6 +99,25 @@ func get_pending_cards() -> Array:
 
 func get_last_production_results() -> Dictionary:
 	return last_production_results.duplicate(true)
+
+func get_building_definitions() -> Dictionary:
+	return building_system.get_building_definitions().duplicate(true)
+
+func get_building_summary() -> Dictionary:
+	var summary: Dictionary = {}
+	for building: Dictionary in GlobalState.village_state.get("buildings", []):
+		var building_id: String = building.get("building_id", "")
+		summary[building_id] = int(summary.get(building_id, 0)) + 1
+	return summary
+
+func place_building_next_available(building_id: String) -> bool:
+	var position := _find_next_buildable_tile(building_id)
+	if position == Vector2i(-1, -1):
+		return false
+	var placed := building_system.place_building(building_id, position)
+	if placed:
+		village_state_changed.emit()
+	return placed
 
 func get_population() -> int:
 	return GlobalState.village_state.get("population", 0)
@@ -161,6 +185,25 @@ func _process_population_growth() -> void:
 		state["population"] = pop + randi_range(1, 3)
 	elif status == "famine" or morale < 30.0:
 		state["population"] = int(max(0, pop - randi_range(1, 4)))
+
+func _find_next_buildable_tile(building_id: String) -> Vector2i:
+	var state := GlobalState.village_state
+	var width := int(state.get("map_width", 30))
+	var height := int(state.get("map_height", 30))
+	var center := Vector2i(width / 2, height / 2)
+	var best_position := Vector2i(-1, -1)
+	var best_distance := 999999
+
+	for y in range(3, height - 3):
+		for x in range(3, width - 3):
+			var position := Vector2i(x, y)
+			if not building_system.can_place_building(building_id, position):
+				continue
+			var distance: int = abs(position.x - center.x) + abs(position.y - center.y)
+			if distance < best_distance:
+				best_distance = distance
+				best_position = position
+	return best_position
 
 func _consume_food() -> void:
 	var pop = get_population()

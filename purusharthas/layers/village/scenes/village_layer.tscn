@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://df6fxdp1c31h"]
+[gd_scene load_steps=10 format=3 uid="uid://df6fxdp1c31h"]
 
 [ext_resource type="Script" path="res://layers/village/scripts/village_manager.gd" id="1_a0b1c"]
 [ext_resource type="Script" path="res://layers/village/scripts/building_system.gd" id="2_d3e4f"]
@@ -8,9 +8,13 @@
 [ext_resource type="Script" path="res://layers/village/scripts/folk_event_system.gd" id="6_p1q2r"]
 [ext_resource type="Script" path="res://layers/village/scripts/threat_system.gd" id="7_s3t4u"]
 [ext_resource type="Script" path="res://layers/village/scripts/gram_swaraj.gd" id="8_v5w6x"]
+[ext_resource type="Script" path="res://layers/village/scripts/village_map_view.gd" id="9_map"]
 
 [node name="VillageLayer" type="Node2D" groups=["village_manager"]]
 script = ExtResource("1_a0b1c")
+
+[node name="VillageMapView" type="Node2D" parent="."]
+script = ExtResource("9_map")
 
 [node name="BuildingSystem" type="Node" parent="."]
 script = ExtResource("2_d3e4f")

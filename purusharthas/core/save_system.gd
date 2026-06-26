@@ -11,7 +11,17 @@ extends Node
 const SAVE_DIR: String = "user://saves/"
 const AUTOSAVE_FILE: String = "autosave.json"
 const MANUAL_SAVE_FILE: String = "manual_save.json"
+const MANUAL_SLOT_PREFIX: String = "manual_slot_%d.json"
+const MANUAL_SLOT_COUNT: int = 3
 const SAVE_VERSION: int = 1
+func _file_name_for(is_autosave: bool, slot: int) -> String:
+	if is_autosave:
+		return AUTOSAVE_FILE
+	var safe_slot: int = clampi(slot, 1, MANUAL_SLOT_COUNT)
+	if safe_slot == 1:
+		return MANUAL_SAVE_FILE
+	return MANUAL_SLOT_PREFIX % safe_slot
+
 #endregion
 
 
@@ -19,10 +29,10 @@ const SAVE_VERSION: int = 1
 
 ## Persist the current game state to disk.
 ## Returns true on success, false on failure.
-func save_game(is_autosave: bool = false) -> bool:
+func save_game(is_autosave: bool = false, slot: int = 1) -> bool:
 	_ensure_save_dir()
 
-	var file_name: String = AUTOSAVE_FILE if is_autosave else MANUAL_SAVE_FILE
+	var file_name: String = _file_name_for(is_autosave, slot)
 	var file_path: String = SAVE_DIR + file_name
 
 	var save_data: Dictionary = _build_save_data()
@@ -47,8 +57,8 @@ func save_game(is_autosave: bool = false) -> bool:
 
 ## Load game state from disk and restore GlobalState + TurnManager.
 ## Returns true on success, false on failure.
-func load_game(is_autosave: bool = false) -> bool:
-	var file_name: String = AUTOSAVE_FILE if is_autosave else MANUAL_SAVE_FILE
+func load_game(is_autosave: bool = false, slot: int = 1) -> bool:
+	var file_name: String = _file_name_for(is_autosave, slot)
 	var file_path: String = SAVE_DIR + file_name
 
 	if not FileAccess.file_exists(file_path):
@@ -87,14 +97,14 @@ func load_game(is_autosave: bool = false) -> bool:
 
 
 ## Check whether a save file exists.
-func has_save(is_autosave: bool = false) -> bool:
-	var file_name: String = AUTOSAVE_FILE if is_autosave else MANUAL_SAVE_FILE
+func has_save(is_autosave: bool = false, slot: int = 1) -> bool:
+	var file_name: String = _file_name_for(is_autosave, slot)
 	return FileAccess.file_exists(SAVE_DIR + file_name)
 
 
 ## Delete a save file.
-func delete_save(is_autosave: bool = false) -> void:
-	var file_name: String = AUTOSAVE_FILE if is_autosave else MANUAL_SAVE_FILE
+func delete_save(is_autosave: bool = false, slot: int = 1) -> void:
+	var file_name: String = _file_name_for(is_autosave, slot)
 	var file_path: String = SAVE_DIR + file_name
 	if FileAccess.file_exists(file_path):
 		DirAccess.remove_absolute(file_path)
@@ -102,8 +112,8 @@ func delete_save(is_autosave: bool = false) -> void:
 
 ## Return save metadata without fully loading the game state.
 ## Returns an empty dictionary if the save doesn't exist.
-func get_save_info(is_autosave: bool = false) -> Dictionary:
-	var file_name: String = AUTOSAVE_FILE if is_autosave else MANUAL_SAVE_FILE
+func get_save_info(is_autosave: bool = false, slot: int = 1) -> Dictionary:
+	var file_name: String = _file_name_for(is_autosave, slot)
 	var file_path: String = SAVE_DIR + file_name
 
 	if not FileAccess.file_exists(file_path):
@@ -123,6 +133,24 @@ func get_save_info(is_autosave: bool = false) -> Dictionary:
 	var data: Dictionary = parsed as Dictionary
 	var meta: Dictionary = data.get("metadata", {}) as Dictionary
 	return meta
+
+
+## Return metadata for autosave and all manual save slots.
+func list_saves() -> Array:
+	var saves: Array[Dictionary] = []
+	if has_save(true):
+		var autosave := get_save_info(true)
+		autosave["kind"] = "autosave"
+		autosave["slot"] = 0
+		saves.append(autosave)
+
+	for slot in range(1, MANUAL_SLOT_COUNT + 1):
+		if has_save(false, slot):
+			var info := get_save_info(false, slot)
+			info["kind"] = "manual"
+			info["slot"] = slot
+			saves.append(info)
+	return saves
 
 #endregion
 

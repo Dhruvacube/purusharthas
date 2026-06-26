@@ -34,6 +34,8 @@ var _updating_labor: bool = false
 var _bind_attempts: int = 0
 
 var _time_label: Label
+var _labor_panel: Control
+var _status_panel: Control
 var _unallocated_label: Label
 var _phase_label: Label
 var _food_status_label: Label
@@ -41,12 +43,19 @@ var _swaraj_label: Label
 var _swaraj_breakdown_label: Label
 var _production_label: Label
 var _card_count_label: Label
+var _materials_label: Label
+var _building_select: OptionButton
+var _building_info_label: Label
+var _building_summary_label: Label
+var _save_slot_select: OptionButton
 var _modal_shade: ColorRect
 var _modal_panel: PanelContainer
 var _modal_icon: TextureRect
 var _modal_title: Label
 var _modal_description: RichTextLabel
 var _modal_choices: VBoxContainer
+var _toast_container: VBoxContainer
+var _building_ids: Array[String] = []
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
@@ -54,6 +63,8 @@ func _ready() -> void:
 	EventBus.game_started.connect(_on_game_started)
 	EventBus.season_changed.connect(_on_state_signal)
 	EventBus.resource_changed.connect(_on_state_signal)
+	EventBus.notification.connect(_on_notification)
+	EventBus.layer_switched.connect(_on_layer_switched)
 	call_deferred("_bind_village_manager")
 
 func _on_game_started() -> void:
@@ -105,15 +116,18 @@ func _build_ui() -> void:
 	middle.add_theme_constant_override("separation", 12)
 	layout.add_child(middle)
 
-	middle.add_child(_build_labor_panel())
+	_labor_panel = _build_labor_panel()
+	middle.add_child(_labor_panel)
 
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	middle.add_child(spacer)
 
-	middle.add_child(_build_status_panel())
+	_status_panel = _build_status_panel()
+	middle.add_child(_status_panel)
 	layout.add_child(_build_bottom_bar())
 	_build_modal()
+	_build_toasts()
 
 func _build_top_bar() -> Control:
 	var panel := PanelContainer.new()
@@ -231,6 +245,31 @@ func _build_status_panel() -> Control:
 
 	_card_count_label = Label.new()
 	box.add_child(_card_count_label)
+
+	var build_title := Label.new()
+	build_title.text = "Build"
+	build_title.add_theme_font_size_override("font_size", 18)
+	box.add_child(build_title)
+
+	_materials_label = Label.new()
+	box.add_child(_materials_label)
+
+	_building_select = OptionButton.new()
+	_building_select.item_selected.connect(_on_building_selected)
+	box.add_child(_building_select)
+
+	_building_info_label = Label.new()
+	_building_info_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(_building_info_label)
+
+	var build_button := Button.new()
+	build_button.text = "Place Building"
+	build_button.pressed.connect(_on_place_building_pressed)
+	box.add_child(build_button)
+
+	_building_summary_label = Label.new()
+	_building_summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(_building_summary_label)
 	return panel
 
 func _build_bottom_bar() -> Control:
@@ -256,6 +295,12 @@ func _build_bottom_bar() -> Control:
 	cards_button.icon = _load_icon("warning")
 	cards_button.pressed.connect(_show_next_pending_card)
 	row.add_child(cards_button)
+
+	_save_slot_select = OptionButton.new()
+	_save_slot_select.custom_minimum_size = Vector2(92, 40)
+	for slot in range(1, SaveSystem.MANUAL_SLOT_COUNT + 1):
+		_save_slot_select.add_item("Slot %d" % slot)
+	row.add_child(_save_slot_select)
 
 	var save_button := Button.new()
 	save_button.text = "Save"
@@ -332,6 +377,23 @@ func _build_modal() -> void:
 	_modal_choices.add_theme_constant_override("separation", 8)
 	box.add_child(_modal_choices)
 
+func _build_toasts() -> void:
+	var top_right := MarginContainer.new()
+	top_right.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	top_right.offset_left = -430
+	top_right.offset_top = 86
+	top_right.offset_right = -18
+	top_right.offset_bottom = 420
+	top_right.add_theme_constant_override("margin_left", 0)
+	top_right.add_theme_constant_override("margin_top", 0)
+	top_right.add_theme_constant_override("margin_right", 0)
+	top_right.add_theme_constant_override("margin_bottom", 0)
+	add_child(top_right)
+
+	_toast_container = VBoxContainer.new()
+	_toast_container.add_theme_constant_override("separation", 8)
+	top_right.add_child(_toast_container)
+
 func _icon_value(key: String, label_text: String) -> Control:
 	var box := HBoxContainer.new()
 	box.add_theme_constant_override("separation", 5)
@@ -371,6 +433,8 @@ func _update_all() -> void:
 	_update_resources()
 	_update_labor()
 	_update_status()
+	_update_build_panel()
+	_update_layer_visibility()
 
 func _update_resources() -> void:
 	var state := GlobalState.village_state
@@ -450,6 +514,71 @@ func _update_status() -> void:
 		]
 	_card_count_label.text = "Pending decisions: %d" % village_manager.get_pending_cards().size()
 
+func _update_build_panel() -> void:
+	if village_manager == null:
+		return
+	var state := GlobalState.village_state
+	_materials_label.text = "Wood %.0f | Stone %.0f" % [
+		float(state.get("wood", 0.0)),
+		float(state.get("stone", 0.0)),
+	]
+
+	var definitions := village_manager.get_building_definitions()
+	if _building_select.item_count != definitions.size():
+		var selected_id := _get_selected_building_id()
+		_building_select.clear()
+		_building_ids.clear()
+		for building_id: String in definitions.keys():
+			var definition: Dictionary = definitions[building_id]
+			_building_ids.append(building_id)
+			_building_select.add_item(definition.get("name", building_id.capitalize()))
+		var selected_index: int = max(_building_ids.find(selected_id), 0)
+		if not _building_ids.is_empty():
+			_building_select.select(selected_index)
+
+	_update_selected_building_info()
+	_update_building_summary()
+
+func _update_selected_building_info() -> void:
+	var building_id := _get_selected_building_id()
+	if building_id.is_empty() or village_manager == null:
+		_building_info_label.text = "No buildings loaded."
+		return
+	var definitions := village_manager.get_building_definitions()
+	var definition: Dictionary = definitions.get(building_id, {})
+	_building_info_label.text = "%s | Cost: %s" % [
+		definition.get("description", ""),
+		_format_cost(definition.get("cost", {})),
+	]
+
+func _update_building_summary() -> void:
+	var summary := village_manager.get_building_summary()
+	if summary.is_empty():
+		_building_summary_label.text = "Buildings: none placed"
+		return
+	var definitions := village_manager.get_building_definitions()
+	var parts: Array[String] = []
+	for building_id: String in summary.keys():
+		var definition: Dictionary = definitions.get(building_id, {})
+		parts.append("%s x%d" % [definition.get("name", building_id), int(summary[building_id])])
+	_building_summary_label.text = "Buildings: %s" % ", ".join(parts)
+
+func _format_cost(cost: Dictionary) -> String:
+	if cost.is_empty():
+		return "free"
+	var parts: Array[String] = []
+	for key: String in cost.keys():
+		parts.append("%s %s" % [key.capitalize(), cost[key]])
+	return ", ".join(parts)
+
+func _get_selected_building_id() -> String:
+	if _building_select == null or _building_select.selected < 0:
+		return ""
+	var index := _building_select.selected
+	if index >= 0 and index < _building_ids.size():
+		return _building_ids[index]
+	return ""
+
 func _on_labor_slider_changed(value: float, category: String) -> void:
 	if _updating_labor or village_manager == null:
 		return
@@ -463,6 +592,24 @@ func _on_auto_allocate_pressed() -> void:
 	if village_manager == null:
 		return
 	village_manager.auto_allocate_labor()
+	_update_all()
+
+func _on_building_selected(_index: int) -> void:
+	_update_selected_building_info()
+
+func _on_place_building_pressed() -> void:
+	if village_manager == null:
+		return
+	var building_id := _get_selected_building_id()
+	if building_id.is_empty():
+		return
+	var placed := village_manager.place_building_next_available(building_id)
+	if not placed:
+		EventBus.notification.emit(
+			"Cannot Build",
+			"The village lacks resources, population, or free build space for that building.",
+			"warning",
+		)
 	_update_all()
 
 func _on_next_turn_pressed() -> void:
@@ -479,14 +626,29 @@ func _on_layer_pressed(layer: int) -> void:
 	GameManager.switch_to_layer(layer)
 	_update_all()
 
+func _on_layer_switched(_from_layer: String, _to_layer: String) -> void:
+	_update_layer_visibility()
+
+func _update_layer_visibility() -> void:
+	var is_village := int(GameManager.current_layer) == 0
+	if _labor_panel != null:
+		_labor_panel.visible = is_village
+	if _status_panel != null:
+		_status_panel.visible = is_village
+
 func _on_save_pressed() -> void:
-	SaveSystem.save_game(false)
+	SaveSystem.save_game(false, _selected_save_slot())
 
 func _on_load_pressed() -> void:
-	GameManager.load_saved_game(false)
+	GameManager.load_saved_game(false, _selected_save_slot())
 
 func _on_menu_pressed() -> void:
 	GameManager.quit_to_menu()
+
+func _selected_save_slot() -> int:
+	if _save_slot_select == null:
+		return 1
+	return max(_save_slot_select.selected + 1, 1)
 
 func _show_next_pending_card() -> void:
 	if village_manager == null:
@@ -534,3 +696,46 @@ func _on_production_resolved(results: Dictionary) -> void:
 
 func _on_state_signal(_a: Variant = null, _b: Variant = null, _c: Variant = null) -> void:
 	_update_all()
+
+func _on_notification(title: String, message: String, severity: String) -> void:
+	if _toast_container == null:
+		return
+	var toast := PanelContainer.new()
+	toast.custom_minimum_size = Vector2(390, 0)
+	_style_panel(toast, _toast_color(severity))
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 3)
+	toast.add_child(box)
+
+	var title_label := Label.new()
+	title_label.text = title
+	title_label.add_theme_font_size_override("font_size", 16)
+	box.add_child(title_label)
+
+	var message_label := Label.new()
+	message_label.text = message
+	message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(message_label)
+
+	_toast_container.add_child(toast)
+	while _toast_container.get_child_count() > 4:
+		_toast_container.get_child(0).queue_free()
+
+	var timer := Timer.new()
+	timer.one_shot = true
+	timer.wait_time = 4.0
+	timer.timeout.connect(toast.queue_free)
+	toast.add_child(timer)
+	timer.start()
+
+func _toast_color(severity: String) -> Color:
+	match severity:
+		"warning":
+			return Color(0.42, 0.26, 0.06, 0.93)
+		"danger":
+			return Color(0.34, 0.08, 0.06, 0.93)
+		"positive":
+			return Color(0.09, 0.30, 0.13, 0.93)
+		_:
+			return Color(0.10, 0.07, 0.04, 0.93)

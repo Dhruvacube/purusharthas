@@ -1,0 +1,42 @@
+[
+  {
+    "id": "purohit",
+    "name": "Acharya Somadeva",
+    "role": "Purohit",
+    "domain": "dharma",
+    "portrait": "res://assets/art/governance/advisors/purohit.svg",
+    "personality": "Patient, ritual-minded, wary of greed.",
+    "loyalty": 62,
+    "influence": 70
+  },
+  {
+    "id": "senapati",
+    "name": "Rudrasena",
+    "role": "Senapati",
+    "domain": "artha",
+    "portrait": "res://assets/art/governance/advisors/senapati.svg",
+    "personality": "Blunt, disciplined, protective of borders.",
+    "loyalty": 58,
+    "influence": 66
+  },
+  {
+    "id": "amatya",
+    "name": "Vishnugupta",
+    "role": "Amatya",
+    "domain": "artha",
+    "portrait": "res://assets/art/governance/advisors/amatya.svg",
+    "personality": "Precise, frugal, attentive to treasury strain.",
+    "loyalty": 60,
+    "influence": 72
+  },
+  {
+    "id": "vaishya",
+    "name": "Sethani Kamala",
+    "role": "Vaishya",
+    "domain": "kama",
+    "portrait": "res://assets/art/governance/advisors/vaishya.svg",
+    "personality": "Worldly, diplomatic, alive to trade and art.",
+    "loyalty": 64,
+    "influence": 61
+  }
+]

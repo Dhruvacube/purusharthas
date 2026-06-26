@@ -24,6 +24,9 @@ func can_place_building(building_id: String, position: Vector2i) -> bool:
 		return false
 	
 	var bdef = building_definitions[building_id]
+	if not _is_footprint_clear(position, _tile_size_for(bdef)):
+		return false
+
 	var state = GlobalState.village_state
 	
 	if state.get("population", 0) < bdef.get("required_population", 0):
@@ -31,7 +34,7 @@ func can_place_building(building_id: String, position: Vector2i) -> bool:
 		
 	var costs = bdef.get("cost", {})
 	for res in costs.keys():
-		if state.get(res, 0.0) < costs[res]:
+		if _get_village_resource(res) < float(costs[res]):
 			return false
 			
 	return true
@@ -45,7 +48,7 @@ func place_building(building_id: String, position: Vector2i) -> bool:
 	
 	var costs = bdef.get("cost", {})
 	for res in costs.keys():
-		state[res] -= costs[res]
+		_modify_village_resource(res, -float(costs[res]))
 		
 	var new_building = {
 		"building_id": building_id,
@@ -78,11 +81,11 @@ func upgrade_building(building_index: int) -> bool:
 		upgrade_costs[k] = base_costs[k] * multiplier
 		
 	for res in upgrade_costs.keys():
-		if state.get(res, 0.0) < upgrade_costs[res]:
+		if _get_village_resource(res) < float(upgrade_costs[res]):
 			return false
 			
 	for res in upgrade_costs.keys():
-		state[res] -= upgrade_costs[res]
+		_modify_village_resource(res, -float(upgrade_costs[res]))
 		
 	b_data["tier"] += 1
 	building_upgraded.emit(building_index, b_data["tier"])
@@ -97,7 +100,11 @@ func remove_building(building_index: int) -> void:
 func get_building_at(position: Vector2i) -> Dictionary:
 	var state = GlobalState.village_state
 	for b in state.get("buildings", []):
-		if b["position"]["x"] == position.x and b["position"]["y"] == position.y:
+		var bdef: Dictionary = building_definitions.get(b["building_id"], {})
+		var tile_size := _tile_size_for(bdef)
+		var origin := Vector2i(int(b["position"]["x"]), int(b["position"]["y"]))
+		var rect := Rect2i(origin, tile_size)
+		if rect.has_point(position):
 			return b
 	return {}
 
@@ -130,3 +137,45 @@ func get_total_effects() -> Dictionary:
 
 func get_building_definitions() -> Dictionary:
 	return building_definitions
+
+func _is_footprint_clear(position: Vector2i, tile_size: Vector2i) -> bool:
+	var state := GlobalState.village_state
+	var width := int(state.get("map_width", 30))
+	var height := int(state.get("map_height", 30))
+	if position.x < 0 or position.y < 0:
+		return false
+	if position.x + tile_size.x > width or position.y + tile_size.y > height:
+		return false
+	for y in range(position.y, position.y + tile_size.y):
+		for x in range(position.x, position.x + tile_size.x):
+			if not get_building_at(Vector2i(x, y)).is_empty():
+				return false
+	return true
+
+func _tile_size_for(definition: Dictionary) -> Vector2i:
+	var raw: Array = definition.get("tile_size", [1, 1])
+	if raw.size() >= 2:
+		return Vector2i(int(raw[0]), int(raw[1]))
+	return Vector2i.ONE
+
+func _resource_key(resource: String) -> String:
+	match resource:
+		"food":
+			return "food_stored"
+		"culture":
+			return "culture_points"
+		_:
+			return resource
+
+func _get_village_resource(resource: String) -> float:
+	return float(GlobalState.village_state.get(_resource_key(resource), 0.0))
+
+func _modify_village_resource(resource: String, delta: float) -> void:
+	var key := _resource_key(resource)
+	var old_value := float(GlobalState.village_state.get(key, 0.0))
+	var new_value := old_value + delta
+	if key == "morale" or key == "trust":
+		new_value = clampf(new_value, 0.0, 100.0)
+	elif key == "population":
+		new_value = maxf(new_value, 0.0)
+	GlobalState.village_state[key] = int(new_value) if key == "population" else new_value

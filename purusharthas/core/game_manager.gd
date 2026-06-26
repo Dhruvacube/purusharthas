@@ -96,8 +96,8 @@ func start_new_game() -> void:
 
 
 ## Load a saved game and restore the active gameplay scene.
-func load_saved_game(is_autosave: bool = false) -> bool:
-	var loaded := SaveSystem.load_game(is_autosave)
+func load_saved_game(is_autosave: bool = false, slot: int = 1) -> bool:
+	var loaded := SaveSystem.load_game(is_autosave, slot)
 	if not loaded:
 		EventBus.notification.emit(
 			"Load Failed",

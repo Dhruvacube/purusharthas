@@ -1,0 +1,119 @@
+[
+  {
+    "id": "temple_tax_petition",
+    "title": "Temple Tax Petition",
+    "description": "Temple trustees ask for a tax exemption, promising care for pilgrims and village ritual life.",
+    "recommended_by": "purohit",
+    "choices": [
+      {
+        "id": "grant_exemption",
+        "text": "Grant the exemption.",
+        "axis_shifts": {"dharma": 6, "moksha": 4, "artha": -4},
+        "resource_deltas": {"treasury": -35, "culture": 8},
+        "advisor_loyalty": {"purohit": 8, "amatya": -5},
+        "cross_layer_event": "governance_temple_tax_exemption"
+      },
+      {
+        "id": "partial_exemption",
+        "text": "Grant a limited exemption.",
+        "axis_shifts": {"dharma": 3, "moksha": 2, "artha": -1},
+        "resource_deltas": {"treasury": -12, "culture": 4},
+        "advisor_loyalty": {"purohit": 3, "amatya": 1}
+      },
+      {
+        "id": "deny_petition",
+        "text": "Deny the petition.",
+        "axis_shifts": {"artha": 4, "dharma": -3, "moksha": -2},
+        "resource_deltas": {"treasury": 20},
+        "advisor_loyalty": {"purohit": -8, "amatya": 5}
+      }
+    ]
+  },
+  {
+    "id": "frontier_raid",
+    "title": "Frontier Raid",
+    "description": "A border village reports raiders moving through the scrublands. The Senapati asks for immediate mobilization.",
+    "recommended_by": "senapati",
+    "choices": [
+      {
+        "id": "mobilize_army",
+        "text": "Mobilize the army.",
+        "axis_shifts": {"artha": 5, "dharma": 1, "kama": -2},
+        "resource_deltas": {"treasury": -40, "morale": 4},
+        "advisor_loyalty": {"senapati": 8, "amatya": -3}
+      },
+      {
+        "id": "fortify_villages",
+        "text": "Fortify nearby villages.",
+        "axis_shifts": {"dharma": 4, "artha": 1},
+        "resource_deltas": {"treasury": -25, "morale": 6},
+        "advisor_loyalty": {"senapati": 3, "purohit": 2}
+      },
+      {
+        "id": "pay_tribute",
+        "text": "Pay tribute to avoid bloodshed.",
+        "axis_shifts": {"moksha": 2, "artha": -5, "dharma": -2},
+        "resource_deltas": {"treasury": -55, "morale": -6},
+        "advisor_loyalty": {"senapati": -8, "purohit": 2}
+      }
+    ]
+  },
+  {
+    "id": "guild_charter",
+    "title": "Guild Charter",
+    "description": "Craft guilds request royal recognition in exchange for better roads, weights, and caravan support.",
+    "recommended_by": "vaishya",
+    "choices": [
+      {
+        "id": "royal_charter",
+        "text": "Issue a royal charter.",
+        "axis_shifts": {"artha": 5, "kama": 5, "dharma": 1},
+        "resource_deltas": {"treasury": 35, "culture": 5},
+        "advisor_loyalty": {"vaishya": 8, "amatya": 3}
+      },
+      {
+        "id": "strict_regulation",
+        "text": "Recognize them under strict regulation.",
+        "axis_shifts": {"artha": 4, "dharma": 3, "kama": -2},
+        "resource_deltas": {"treasury": 18},
+        "advisor_loyalty": {"amatya": 5, "vaishya": -3}
+      },
+      {
+        "id": "reject_guilds",
+        "text": "Reject the guild petition.",
+        "axis_shifts": {"artha": -2, "kama": -5},
+        "resource_deltas": {"culture": -4},
+        "advisor_loyalty": {"vaishya": -8}
+      }
+    ]
+  },
+  {
+    "id": "sage_arrival",
+    "title": "Arrival of a Sage",
+    "description": "A wandering sage arrives with followers, asking for land to establish an ashram.",
+    "recommended_by": "purohit",
+    "choices": [
+      {
+        "id": "grant_land",
+        "text": "Grant land and patronage.",
+        "axis_shifts": {"moksha": 7, "dharma": 4, "artha": -3},
+        "resource_deltas": {"treasury": -25, "culture": 6},
+        "advisor_loyalty": {"purohit": 6, "amatya": -2}
+      },
+      {
+        "id": "invite_to_court",
+        "text": "Invite the sage to court.",
+        "axis_shifts": {"moksha": 4, "kama": 3},
+        "resource_deltas": {"culture": 8},
+        "advisor_loyalty": {"purohit": 3, "vaishya": 2}
+      },
+      {
+        "id": "politely_decline",
+        "text": "Politely decline.",
+        "axis_shifts": {"artha": 2, "moksha": -4},
+        "resource_deltas": {"treasury": 8},
+        "advisor_loyalty": {"purohit": -5, "amatya": 2}
+      }
+    ]
+  }
+]

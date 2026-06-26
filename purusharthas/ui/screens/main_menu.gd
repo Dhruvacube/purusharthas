@@ -6,7 +6,7 @@ const OCHRE := Color(0.80, 0.47, 0.13, 1.0)
 const INDIGO := Color(0.18, 0.03, 0.33, 1.0)
 const IVORY := Color(1.0, 1.0, 0.94, 1.0)
 
-var _load_button: Button
+var _manual_load_buttons: Array[Button] = []
 var _autosave_button: Button
 var _status_label: Label
 
@@ -57,12 +57,14 @@ func _build_ui() -> void:
 	new_game.pressed.connect(_on_new_game_pressed)
 	box.add_child(new_game)
 
-	_load_button = _menu_button("Load Manual Save")
-	_load_button.pressed.connect(_on_load_pressed.bind(false))
-	box.add_child(_load_button)
+	for slot in range(1, SaveSystem.MANUAL_SLOT_COUNT + 1):
+		var load_button := _menu_button("Load Manual Slot %d" % slot)
+		load_button.pressed.connect(_on_load_pressed.bind(false, slot))
+		box.add_child(load_button)
+		_manual_load_buttons.append(load_button)
 
 	_autosave_button = _menu_button("Load Autosave")
-	_autosave_button.pressed.connect(_on_load_pressed.bind(true))
+	_autosave_button.pressed.connect(_on_load_pressed.bind(true, 1))
 	box.add_child(_autosave_button)
 
 	var quit := _menu_button("Quit")
@@ -102,14 +104,16 @@ func _menu_button(text: String) -> Button:
 	return button
 
 func _refresh_save_buttons() -> void:
-	var has_manual := SaveSystem.has_save(false)
 	var has_autosave := SaveSystem.has_save(true)
-	_load_button.disabled = not has_manual
+	for index in range(_manual_load_buttons.size()):
+		var slot := index + 1
+		_manual_load_buttons[index].disabled = not SaveSystem.has_save(false, slot)
 	_autosave_button.disabled = not has_autosave
 
 	var details: Array[String] = []
-	if has_manual:
-		details.append("Manual: %s" % _format_save_info(SaveSystem.get_save_info(false)))
+	for slot in range(1, SaveSystem.MANUAL_SLOT_COUNT + 1):
+		if SaveSystem.has_save(false, slot):
+			details.append("Slot %d: %s" % [slot, _format_save_info(SaveSystem.get_save_info(false, slot))])
 	if has_autosave:
 		details.append("Autosave: %s" % _format_save_info(SaveSystem.get_save_info(true)))
 	if details.is_empty():
@@ -128,8 +132,8 @@ func _format_save_info(info: Dictionary) -> String:
 func _on_new_game_pressed() -> void:
 	GameManager.start_new_game()
 
-func _on_load_pressed(is_autosave: bool) -> void:
-	var ok := GameManager.load_saved_game(is_autosave)
+func _on_load_pressed(is_autosave: bool, slot: int) -> void:
+	var ok := GameManager.load_saved_game(is_autosave, slot)
 	if not ok:
 		_refresh_save_buttons()
 

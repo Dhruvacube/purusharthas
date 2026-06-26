@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3 uid="uid://governancelayer001"]
+
+[ext_resource type="Script" path="res://layers/governance/scripts/governance_manager.gd" id="1_gov"]
+[ext_resource type="Script" path="res://layers/governance/scripts/council_system.gd" id="2_council"]
+[ext_resource type="Script" path="res://layers/governance/scripts/governance_map_view.gd" id="3_map"]
+[ext_resource type="Script" path="res://layers/governance/scripts/governance_ui.gd" id="4_ui"]
+
+[node name="GovernanceLayer" type="Node2D" groups=["governance_manager"]]
+script = ExtResource("1_gov")
+
+[node name="CouncilSystem" type="Node" parent="."]
+script = ExtResource("2_council")
+
+[node name="GovernanceMapView" type="Node2D" parent="."]
+script = ExtResource("3_map")
+
+[node name="GovernanceCanvas" type="CanvasLayer" parent="."]
+
+[node name="GovernanceUI" type="Control" parent="GovernanceCanvas"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("4_ui")

@@ -1,32 +1,488 @@
 class_name VillageHUD
 extends Control
 
-@onready var resources_label: Label = $TopBar/HBoxContainer/ResourcesLabel
-@onready var next_turn_button: Button = $BottomBar/NextTurnButton
+const ICONS: Dictionary = {
+	"population": "res://assets/art/ui/population.svg",
+	"food": "res://assets/art/ui/food.svg",
+	"gold": "res://assets/art/ui/gold.svg",
+	"morale": "res://assets/art/ui/morale.svg",
+	"trust": "res://assets/art/ui/trust.svg",
+	"culture": "res://assets/art/ui/culture.svg",
+	"swaraj": "res://assets/art/ui/gram_swaraj.svg",
+	"kharif": "res://assets/art/ui/season_kharif.svg",
+	"rabi": "res://assets/art/ui/season_rabi.svg",
+	"zaid": "res://assets/art/ui/season_zaid.svg",
+	"season_kharif": "res://assets/art/ui/season_kharif.svg",
+	"season_rabi": "res://assets/art/ui/season_rabi.svg",
+	"season_zaid": "res://assets/art/ui/season_zaid.svg",
+	"warning": "res://assets/art/ui/warning.svg",
+}
+
+const LABOR_CATEGORIES: Dictionary = {
+	"FARMING": "Farming",
+	"CRAFT_PRODUCTION": "Crafts",
+	"TRADE_CARAVANS": "Trade",
+	"TEMPLE_UPKEEP": "Temple",
+	"COMMUNITY_SERVICE": "Community",
+}
+
+var village_manager: VillageManager
+var _resource_labels: Dictionary = {}
+var _labor_sliders: Dictionary = {}
+var _labor_values: Dictionary = {}
+var _updating_labor: bool = false
+
+var _time_label: Label
+var _unallocated_label: Label
+var _phase_label: Label
+var _food_status_label: Label
+var _swaraj_label: Label
+var _swaraj_breakdown_label: Label
+var _production_label: Label
+var _card_count_label: Label
+var _modal_shade: ColorRect
+var _modal_panel: PanelContainer
+var _modal_icon: TextureRect
+var _modal_title: Label
+var _modal_description: RichTextLabel
+var _modal_choices: VBoxContainer
 
 func _ready() -> void:
-	EventBus.season_changed.connect(_on_season_changed)
-	EventBus.resource_changed.connect(_on_resource_changed)
-	next_turn_button.pressed.connect(_on_next_turn_pressed)
+	mouse_filter = Control.MOUSE_FILTER_PASS
+	_build_ui()
+	EventBus.game_started.connect(_on_game_started)
+	EventBus.season_changed.connect(_on_state_signal)
+	EventBus.resource_changed.connect(_on_state_signal)
+	call_deferred("_bind_village_manager")
+
+func _on_game_started() -> void:
+	call_deferred("_bind_village_manager")
+
+func _bind_village_manager() -> void:
+	var node := get_tree().get_first_node_in_group("village_manager")
+	if node == null:
+		_update_all()
+		return
+
+	village_manager = node as VillageManager
+	if village_manager == null:
+		return
+
+	if not village_manager.village_state_changed.is_connected(_on_village_state_changed):
+		village_manager.village_state_changed.connect(_on_village_state_changed)
+	if not village_manager.pending_cards_changed.is_connected(_on_pending_cards_changed):
+		village_manager.pending_cards_changed.connect(_on_pending_cards_changed)
+	if not village_manager.production_resolved.is_connected(_on_production_resolved):
+		village_manager.production_resolved.connect(_on_production_resolved)
+
+	_update_all()
+	_show_next_pending_card()
+
+func _build_ui() -> void:
+	set_anchors_preset(Control.PRESET_FULL_RECT)
+
+	var root := MarginContainer.new()
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.add_theme_constant_override("margin_left", 16)
+	root.add_theme_constant_override("margin_top", 14)
+	root.add_theme_constant_override("margin_right", 16)
+	root.add_theme_constant_override("margin_bottom", 14)
+	add_child(root)
+
+	var layout := VBoxContainer.new()
+	layout.add_theme_constant_override("separation", 12)
+	root.add_child(layout)
+
+	layout.add_child(_build_top_bar())
+
+	var middle := HBoxContainer.new()
+	middle.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	middle.add_theme_constant_override("separation", 12)
+	layout.add_child(middle)
+
+	middle.add_child(_build_labor_panel())
+
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	middle.add_child(spacer)
+
+	middle.add_child(_build_status_panel())
+	layout.add_child(_build_bottom_bar())
+	_build_modal()
+
+func _build_top_bar() -> Control:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(0, 70)
+	_style_panel(panel, Color(0.10, 0.07, 0.04, 0.86))
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 14)
+	panel.add_child(row)
+
+	_time_label = Label.new()
+	_time_label.custom_minimum_size = Vector2(210, 0)
+	_time_label.add_theme_font_size_override("font_size", 20)
+	row.add_child(_time_label)
+
+	for item in [
+		["population", "Pop"],
+		["food", "Food"],
+		["gold", "Gold"],
+		["morale", "Morale"],
+		["trust", "Trust"],
+		["culture", "Culture"],
+	]:
+		var box := _icon_value(item[0], item[1])
+		row.add_child(box)
+
+	var fill := Control.new()
+	fill.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(fill)
+
+	_phase_label = Label.new()
+	_phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_phase_label.custom_minimum_size = Vector2(190, 0)
+	row.add_child(_phase_label)
+	return panel
+
+func _build_labor_panel() -> Control:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(350, 0)
+	_style_panel(panel, Color(0.12, 0.08, 0.05, 0.90))
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 10)
+	panel.add_child(box)
+
+	var title := Label.new()
+	title.text = "Labor"
+	title.add_theme_font_size_override("font_size", 22)
+	box.add_child(title)
+
+	_unallocated_label = Label.new()
+	box.add_child(_unallocated_label)
+
+	for category: String in LABOR_CATEGORIES.keys():
+		var row := VBoxContainer.new()
+		row.add_theme_constant_override("separation", 3)
+		box.add_child(row)
+
+		var label_row := HBoxContainer.new()
+		row.add_child(label_row)
+
+		var name_label := Label.new()
+		name_label.text = LABOR_CATEGORIES[category]
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		label_row.add_child(name_label)
+
+		var value_label := Label.new()
+		value_label.custom_minimum_size = Vector2(42, 0)
+		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		label_row.add_child(value_label)
+		_labor_values[category] = value_label
+
+		var slider := HSlider.new()
+		slider.min_value = 0
+		slider.step = 1
+		slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		slider.value_changed.connect(_on_labor_slider_changed.bind(category))
+		row.add_child(slider)
+		_labor_sliders[category] = slider
+
+	var auto_button := Button.new()
+	auto_button.text = "Auto Allocate"
+	auto_button.pressed.connect(_on_auto_allocate_pressed)
+	box.add_child(auto_button)
+	return panel
+
+func _build_status_panel() -> Control:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(360, 0)
+	_style_panel(panel, Color(0.12, 0.08, 0.05, 0.90))
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 12)
+	panel.add_child(box)
+
+	var title := Label.new()
+	title.text = "Village"
+	title.add_theme_font_size_override("font_size", 22)
+	box.add_child(title)
+
+	_food_status_label = Label.new()
+	box.add_child(_food_status_label)
+
+	_swaraj_label = Label.new()
+	_swaraj_label.add_theme_font_size_override("font_size", 18)
+	box.add_child(_swaraj_label)
+
+	_swaraj_breakdown_label = Label.new()
+	_swaraj_breakdown_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(_swaraj_breakdown_label)
+
+	_production_label = Label.new()
+	_production_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(_production_label)
+
+	_card_count_label = Label.new()
+	box.add_child(_card_count_label)
+	return panel
+
+func _build_bottom_bar() -> Control:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(0, 76)
+	_style_panel(panel, Color(0.10, 0.07, 0.04, 0.86))
+
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_END
+	row.add_theme_constant_override("separation", 10)
+	panel.add_child(row)
+
+	var cards_button := Button.new()
+	cards_button.text = "Open Decision"
+	cards_button.icon = _load_icon("warning")
+	cards_button.pressed.connect(_show_next_pending_card)
+	row.add_child(cards_button)
+
+	var end_button := Button.new()
+	end_button.text = "End Season"
+	end_button.icon = _load_icon("season_kharif")
+	end_button.custom_minimum_size = Vector2(180, 46)
+	end_button.pressed.connect(_on_next_turn_pressed)
+	row.add_child(end_button)
+	return panel
+
+func _build_modal() -> void:
+	_modal_shade = ColorRect.new()
+	_modal_shade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_modal_shade.color = Color(0.02, 0.015, 0.01, 0.62)
+	_modal_shade.visible = false
+	add_child(_modal_shade)
+
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_modal_shade.add_child(center)
+
+	_modal_panel = PanelContainer.new()
+	_modal_panel.custom_minimum_size = Vector2(560, 360)
+	_style_panel(_modal_panel, Color(0.93, 0.86, 0.70, 0.98))
+	center.add_child(_modal_panel)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 12)
+	_modal_panel.add_child(box)
+
+	var title_row := HBoxContainer.new()
+	title_row.add_theme_constant_override("separation", 10)
+	box.add_child(title_row)
+
+	_modal_icon = TextureRect.new()
+	_modal_icon.custom_minimum_size = Vector2(42, 42)
+	_modal_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	title_row.add_child(_modal_icon)
+
+	_modal_title = Label.new()
+	_modal_title.add_theme_font_size_override("font_size", 24)
+	_modal_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_row.add_child(_modal_title)
+
+	_modal_description = RichTextLabel.new()
+	_modal_description.custom_minimum_size = Vector2(0, 95)
+	_modal_description.fit_content = true
+	_modal_description.scroll_active = false
+	_modal_description.bbcode_enabled = false
+	box.add_child(_modal_description)
+
+	_modal_choices = VBoxContainer.new()
+	_modal_choices.add_theme_constant_override("separation", 8)
+	box.add_child(_modal_choices)
+
+func _icon_value(key: String, label_text: String) -> Control:
+	var box := HBoxContainer.new()
+	box.add_theme_constant_override("separation", 5)
+
+	var icon := TextureRect.new()
+	icon.texture = _load_icon(key)
+	icon.custom_minimum_size = Vector2(28, 28)
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	box.add_child(icon)
+
+	var label := Label.new()
+	label.custom_minimum_size = Vector2(96, 0)
+	label.text = "%s: -" % label_text
+	box.add_child(label)
+	_resource_labels[key] = label
+	return box
+
+func _style_panel(panel: PanelContainer, color: Color) -> void:
+	var style := StyleBoxFlat.new()
+	style.bg_color = color
+	style.border_color = Color(0.83, 0.55, 0.16, 0.95)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(6)
+	style.set_content_margin(SIDE_LEFT, 14)
+	style.set_content_margin(SIDE_TOP, 10)
+	style.set_content_margin(SIDE_RIGHT, 14)
+	style.set_content_margin(SIDE_BOTTOM, 10)
+	panel.add_theme_stylebox_override("panel", style)
+
+func _load_icon(key: String) -> Texture2D:
+	var path: String = ICONS.get(key, "res://assets/art/ui/warning.svg")
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	return null
+
+func _update_all() -> void:
 	_update_resources()
+	_update_labor()
+	_update_status()
 
 func _update_resources() -> void:
-	var pop = GlobalState.village_state.get("population", 0)
-	var food = GlobalState.village_state.get("food_stored", 0.0)
-	var gold = GlobalState.village_state.get("gold", 0.0)
-	var season = TurnManager.get_current_season_name()
-	var year = TurnManager.get_current_year_display()
-	resources_label.text = "%s - %s | Pop: %d | Food: %.1f | Gold: %.1f" % [year, season, pop, food, gold]
+	var state := GlobalState.village_state
+	var season := TurnManager.get_current_season_name()
+	var season_key := season.to_lower()
+	var season_icon := _load_icon("season_%s" % season_key)
+	_time_label.text = "%s  |  %s" % [TurnManager.get_current_year_display(), season]
 
-func _on_resource_changed(res_name: String, old_val: float, new_val: float) -> void:
-	_update_resources()
+	_set_resource_text("population", "Pop", state.get("population", 0))
+	_set_resource_text("food", "Food", state.get("food_stored", 0.0))
+	_set_resource_text("gold", "Gold", state.get("gold", 0.0))
+	_set_resource_text("morale", "Morale", state.get("morale", 0.0))
+	_set_resource_text("trust", "Trust", state.get("trust", 0.0))
+	_set_resource_text("culture", "Culture", state.get("culture_points", 0.0))
 
-func _on_season_changed(season_name: String, year: int) -> void:
-	_update_resources()
+	if season_icon != null:
+		# Keep the icon warm in the import cache; the visible season is textual for now.
+		pass
+
+	var phase := "No village"
+	if village_manager != null:
+		phase = village_manager.current_phase.capitalize()
+	_phase_label.text = "Phase: %s" % phase
+
+func _set_resource_text(key: String, label_text: String, value: Variant) -> void:
+	if not _resource_labels.has(key):
+		return
+	var label := _resource_labels[key] as Label
+	if value is int:
+		label.text = "%s: %d" % [label_text, value]
+	else:
+		label.text = "%s: %.1f" % [label_text, float(value)]
+
+func _update_labor() -> void:
+	_updating_labor = true
+	var total := 0
+	var unallocated := 0
+	var allocation: Dictionary = {}
+	if village_manager != null:
+		total = village_manager.get_total_labor()
+		unallocated = village_manager.get_unallocated_labor()
+		allocation = village_manager.get_labor_allocation()
+	_unallocated_label.text = "Available: %d / %d" % [unallocated, total]
+	for category: String in LABOR_CATEGORIES.keys():
+		var slider := _labor_sliders[category] as HSlider
+		var value_label := _labor_values[category] as Label
+		slider.max_value = max(total, 1)
+		slider.value = int(allocation.get(category, 0))
+		value_label.text = str(int(slider.value))
+	_updating_labor = false
+
+func _update_status() -> void:
+	if village_manager == null:
+		_food_status_label.text = "Waiting for village..."
+		return
+	var score := village_manager.get_gram_swaraj_score()
+	_food_status_label.text = "Food status: %s" % village_manager.get_food_status().capitalize()
+	_swaraj_label.text = "Gram Swaraj: %.1f (%s)" % [
+		float(score.get("total", 0.0)),
+		village_manager.gram_swaraj.get_score_tier().capitalize(),
+	]
+	_swaraj_breakdown_label.text = "Food %.0f | Culture %.0f | Trust %.0f | Trade %.0f" % [
+		float(score.get("food_security", 0.0)),
+		float(score.get("cultural_vibrancy", 0.0)),
+		float(score.get("panchayat_trust", 0.0)),
+		float(score.get("trade_connections", 0.0)),
+	]
+	var production := village_manager.get_last_production_results()
+	if production.is_empty():
+		_production_label.text = "Last production: none yet"
+	else:
+		_production_label.text = "Last production: Food +%.1f | Gold +%.1f | Culture +%.1f | Morale +%.1f" % [
+			float(production.get("food_produced", 0.0)),
+			float(production.get("trade_income", 0.0)),
+			float(production.get("culture_generated", 0.0)),
+			float(production.get("morale_change", 0.0)),
+		]
+	_card_count_label.text = "Pending decisions: %d" % village_manager.get_pending_cards().size()
+
+func _on_labor_slider_changed(value: float, category: String) -> void:
+	if _updating_labor or village_manager == null:
+		return
+	var ok := village_manager.set_labor_allocation(category, int(value))
+	if not ok:
+		_update_labor()
+		return
+	_update_all()
+
+func _on_auto_allocate_pressed() -> void:
+	if village_manager == null:
+		return
+	village_manager.auto_allocate_labor()
+	_update_all()
 
 func _on_next_turn_pressed() -> void:
-	var vm = get_tree().get_first_node_in_group("village_manager")
-	if vm and vm.has_method("end_season"):
-		vm.end_season()
+	if village_manager == null:
+		_bind_village_manager()
+	if village_manager != null:
+		village_manager.end_season()
 	else:
 		TurnManager.advance_season()
+	_update_all()
+	_show_next_pending_card()
+
+func _show_next_pending_card() -> void:
+	if village_manager == null:
+		return
+	var cards := village_manager.get_pending_cards()
+	if cards.is_empty():
+		_modal_shade.visible = false
+		return
+	_show_card(cards[0])
+
+func _show_card(card: Dictionary) -> void:
+	_modal_shade.visible = true
+	_modal_icon.texture = load(card.get("icon_path", "res://assets/art/ui/warning.svg")) as Texture2D
+	_modal_title.text = card.get("title", "Decision")
+	_modal_description.text = card.get("description", "")
+	for child in _modal_choices.get_children():
+		child.queue_free()
+
+	var card_id := int(card.get("card_id", -1))
+	for choice: Dictionary in card.get("choices", []):
+		var button := Button.new()
+		button.text = choice.get("text", "Choose")
+		button.tooltip_text = choice.get("description", "")
+		button.custom_minimum_size = Vector2(0, 42)
+		button.pressed.connect(_on_choice_pressed.bind(card_id, choice.get("id", "")))
+		_modal_choices.add_child(button)
+
+func _on_choice_pressed(card_id: int, choice_id: String) -> void:
+	if village_manager == null:
+		return
+	village_manager.resolve_pending_card(card_id, choice_id)
+	_update_all()
+	_show_next_pending_card()
+
+func _on_village_state_changed() -> void:
+	_update_all()
+
+func _on_pending_cards_changed(cards: Array) -> void:
+	_update_status()
+	if _modal_shade.visible and cards.is_empty():
+		_modal_shade.visible = false
+
+func _on_production_resolved(results: Dictionary) -> void:
+	_update_all()
+
+func _on_state_signal(_a: Variant = null, _b: Variant = null, _c: Variant = null) -> void:
+	_update_all()

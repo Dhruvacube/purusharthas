@@ -83,7 +83,7 @@ func _process_decision(issue_id: String, choice_id: String, was_override: bool) 
 	
 	var res_deltas = outcomes.get("resource_deltas", {})
 	for res in res_deltas.keys():
-		GlobalState.village_state[res] = GlobalState.village_state.get(res, 0.0) + float(res_deltas[res])
+		_modify_village_resource(res, float(res_deltas[res]))
 		
 	var trust_delta = _calculate_trust_change(choice, was_override)
 	modify_trust(trust_delta)
@@ -105,3 +105,22 @@ func _calculate_trust_change(choice: Dictionary, was_override: bool) -> float:
 		return base - (1.0 - pop_sup) * 10.0
 	else:
 		return base + pop_sup * 5.0
+
+func _resource_key(resource: String) -> String:
+	match resource:
+		"food":
+			return "food_stored"
+		"culture":
+			return "culture_points"
+		_:
+			return resource
+
+func _modify_village_resource(resource: String, delta: float) -> void:
+	var key := _resource_key(resource)
+	var old_value := float(GlobalState.village_state.get(key, 0.0))
+	var new_value := old_value + delta
+	if key == "morale" or key == "trust":
+		new_value = clampf(new_value, 0.0, 100.0)
+	elif key == "population":
+		new_value = maxf(new_value, 0.0)
+	GlobalState.village_state[key] = int(new_value) if key == "population" else new_value

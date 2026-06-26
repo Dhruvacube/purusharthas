@@ -47,12 +47,11 @@ func _apply_threat_effects(threat: Dictionary, severity: int) -> void:
 	var effs = threat.get("effects", {})
 	for k in effs.keys():
 		var val = float(effs[k]) * float(severity)
-		var cur = GlobalState.village_state.get(k, 50.0)
-		GlobalState.village_state[k] = cur + val
+		_modify_village_resource(k, val)
 
 func _check_cross_layer_impact(threat_id: String, severity: int) -> void:
 	if threat_id == "drought" and severity >= 4:
-		EventBus.process_cross_layer_event("village", "famine", {})
+		EventBus.process_cross_layer_event("village", "village_famine", {"severity": float(severity) / 4.0})
 
 func get_threat_details(threat_id: String) -> Dictionary:
 	for t in threats_data:
@@ -76,7 +75,7 @@ func respond_to_threat(threat_id: String, choice_id: String) -> Dictionary:
 		
 	var reqs = choice.get("requirements", {})
 	for r in reqs.keys():
-		if GlobalState.village_state.get(r, 0.0) < float(reqs[r]):
+		if _get_village_resource(r) < float(reqs[r]):
 			return {}
 			
 	var outcomes = choice.get("outcomes", {})
@@ -87,7 +86,7 @@ func respond_to_threat(threat_id: String, choice_id: String) -> Dictionary:
 		for k in outcomes.keys():
 			if k != "probability":
 				var val = float(outcomes[k])
-				GlobalState.village_state[k] = GlobalState.village_state.get(k, 0.0) + val
+				_modify_village_resource(k, val)
 				results[k] = val
 	else:
 		results["failed"] = true
@@ -109,3 +108,27 @@ func tick_active_threats() -> void:
 		else:
 			threat_expired.emit(at["threat_id"])
 	active_threats = kept
+
+func _resource_key(resource: String) -> String:
+	match resource:
+		"food":
+			return "food_stored"
+		"culture":
+			return "culture_points"
+		_:
+			return resource
+
+func _get_village_resource(resource: String) -> float:
+	return float(GlobalState.village_state.get(_resource_key(resource), 0.0))
+
+func _modify_village_resource(resource: String, delta: float) -> void:
+	var key := _resource_key(resource)
+	if key == "food_production":
+		key = "food_stored"
+	var old_value := float(GlobalState.village_state.get(key, 0.0))
+	var new_value := old_value + delta
+	if key == "morale" or key == "trust":
+		new_value = clampf(new_value, 0.0, 100.0)
+	elif key == "population":
+		new_value = maxf(new_value, 0.0)
+	GlobalState.village_state[key] = int(new_value) if key == "population" else new_value

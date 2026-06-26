@@ -1,6 +1,10 @@
 class_name VillageManager
 extends Node2D
 
+signal village_state_changed()
+signal pending_cards_changed(cards: Array)
+signal production_resolved(results: Dictionary)
+
 @onready var building_system: BuildingSystem = $BuildingSystem
 @onready var labor_system: LaborSystem = $LaborSystem
 @onready var panchayat_system: PanchayatSystem = $PanchayatSystem
@@ -9,6 +13,10 @@ extends Node2D
 @onready var gram_swaraj: GramSwaraj = $GramSwaraj
 
 var current_phase: String = "allocation" # 'allocation', 'production', 'event', 'resolution'
+var pending_cards: Array[Dictionary] = []
+var last_production_results: Dictionary = {}
+var _next_card_id: int = 1
+var _last_panchayat_year: int = -999999
 
 func _ready() -> void:
 	if GlobalState.village_state.is_empty():
@@ -33,23 +41,59 @@ func _init_village_state() -> void:
 	}
 
 func start_season() -> void:
-	current_phase = "allocation"
+	current_phase = "event" if not pending_cards.is_empty() else "allocation"
+	village_state_changed.emit()
 
 func end_season() -> void:
 	current_phase = "resolution"
 	
 	var season_name = TurnManager.get_current_season_name()
 	var production = labor_system.calculate_production(season_name)
+	last_production_results = production.duplicate(true)
 	labor_system.apply_production(production)
+	production_resolved.emit(production)
 	
 	_consume_food()
 	_process_population_growth()
 	_check_famine()
+	threat_system.tick_active_threats()
+	_queue_threat_cards(threat_system.check_threats(season_name))
+	_queue_folk_event_cards(folk_event_system.check_events(season_name))
+	_queue_panchayat_cards()
+	gram_swaraj.calculate_score()
 	
 	TurnManager.advance_season()
+	current_phase = "event" if not pending_cards.is_empty() else "allocation"
+	village_state_changed.emit()
+	pending_cards_changed.emit(get_pending_cards())
 
 func get_gram_swaraj_score() -> Dictionary:
 	return gram_swaraj.calculate_score()
+
+func get_labor_allocation() -> Dictionary:
+	return labor_system.get_allocation().duplicate()
+
+func get_total_labor() -> int:
+	return labor_system.get_total_labor()
+
+func get_unallocated_labor() -> int:
+	return labor_system.get_unallocated()
+
+func set_labor_allocation(category: String, units: int) -> bool:
+	var ok = labor_system.set_allocation(category, units)
+	if ok:
+		village_state_changed.emit()
+	return ok
+
+func auto_allocate_labor() -> void:
+	labor_system.auto_allocate()
+	village_state_changed.emit()
+
+func get_pending_cards() -> Array:
+	return pending_cards.duplicate(true)
+
+func get_last_production_results() -> Dictionary:
+	return last_production_results.duplicate(true)
 
 func get_population() -> int:
 	return GlobalState.village_state.get("population", 0)
@@ -69,6 +113,42 @@ func get_food_status() -> String:
 
 func _on_season_changed(season_name: String, year: int) -> void:
 	start_season()
+
+func resolve_pending_card(card_id: int, choice_id: String) -> Dictionary:
+	var card_index := -1
+	var card: Dictionary = {}
+	for i in range(pending_cards.size()):
+		if int(pending_cards[i].get("card_id", -1)) == card_id:
+			card_index = i
+			card = pending_cards[i]
+			break
+	if card_index == -1:
+		return {}
+
+	var result: Dictionary = {}
+	match card.get("card_type", ""):
+		"folk_event":
+			if choice_id == "skip":
+				folk_event_system.skip_event(card.get("source_id", ""))
+				result = {"morale": -2.0}
+			else:
+				result = folk_event_system.invest_in_event(card.get("source_id", ""), choice_id)
+		"threat":
+			result = threat_system.respond_to_threat(card.get("source_id", ""), choice_id)
+		"panchayat":
+			var issue_id: String = card.get("source_id", "")
+			if choice_id.begins_with("override:"):
+				result = panchayat_system.override_decision(issue_id, choice_id.substr("override:".length()))
+			else:
+				result = panchayat_system.submit_decision(issue_id, choice_id)
+		"notice":
+			result = {"acknowledged": true}
+
+	pending_cards.remove_at(card_index)
+	current_phase = "event" if not pending_cards.is_empty() else "allocation"
+	village_state_changed.emit()
+	pending_cards_changed.emit(get_pending_cards())
+	return result
 
 func _process_population_growth() -> void:
 	var status = get_food_status()
@@ -96,4 +176,113 @@ func _consume_food() -> void:
 
 func _check_famine() -> void:
 	if get_food_status() == "famine":
-		EventBus.process_cross_layer_event("village", "famine", {})
+		EventBus.process_cross_layer_event("village", "village_famine", {"severity": 1.0})
+		_add_pending_card(
+			"notice",
+			"Famine Warning",
+			"Food stores have fallen dangerously low. Other layers will feel the strain of this village famine.",
+			"res://assets/art/ui/warning.svg",
+			"famine",
+			[{"id": "acknowledge", "text": "Acknowledge", "description": ""}]
+		)
+
+func _queue_folk_event_cards(events: Array) -> void:
+	for event_data: Dictionary in events:
+		var choices: Array[Dictionary] = []
+		var levels: Dictionary = event_data.get("investment_levels", {})
+		for level: String in levels.keys():
+			var investment: Dictionary = levels[level]
+			choices.append({
+				"id": level,
+				"text": "%s offering" % level.capitalize(),
+				"description": _format_cost_reward(investment.get("cost", {}), investment.get("rewards", {})),
+			})
+		choices.append({"id": "skip", "text": "Skip festival", "description": "Morale -2"})
+		_add_pending_card(
+			"folk_event",
+			event_data.get("name", "Village Event"),
+			event_data.get("flavor_text", event_data.get("description", "")),
+			"res://assets/art/ui/festival.svg",
+			event_data.get("id", ""),
+			choices
+		)
+
+func _queue_threat_cards(threats: Array) -> void:
+	for threat_data: Dictionary in threats:
+		var choices: Array[Dictionary] = []
+		for choice: Dictionary in threat_data.get("choices", []):
+			choices.append({
+				"id": choice.get("id", ""),
+				"text": choice.get("text", "Respond"),
+				"description": choice.get("description", ""),
+			})
+		_add_pending_card(
+			"threat",
+			threat_data.get("name", "Threat"),
+			threat_data.get("flavor_text", threat_data.get("description", "")),
+			"res://assets/art/ui/threat.svg",
+			threat_data.get("id", ""),
+			choices
+		)
+
+func _queue_panchayat_cards() -> void:
+	if not panchayat_system.check_panchayat_due():
+		return
+	if _last_panchayat_year == TurnManager.get_current_year():
+		return
+	_last_panchayat_year = TurnManager.get_current_year()
+	panchayat_system.convene_panchayat()
+	for issue: Dictionary in panchayat_system.current_issues:
+		var choices: Array[Dictionary] = []
+		for choice: Dictionary in issue.get("choices", []):
+			choices.append({
+				"id": choice.get("id", ""),
+				"text": choice.get("text", "Advise"),
+				"description": choice.get("description", ""),
+			})
+			choices.append({
+				"id": "override:%s" % choice.get("id", ""),
+				"text": "Override: %s" % choice.get("text", "Decision"),
+				"description": "Force this decision. This may reduce Panchayat trust.",
+			})
+		_add_pending_card(
+			"panchayat",
+			issue.get("name", "Panchayat Issue"),
+			issue.get("flavor_text", issue.get("description", "")),
+			"res://assets/art/ui/panchayat.svg",
+			issue.get("id", ""),
+			choices
+		)
+
+func _add_pending_card(
+	card_type: String,
+	title: String,
+	description: String,
+	icon_path: String,
+	source_id: String,
+	choices: Array
+) -> void:
+	pending_cards.append({
+		"card_id": _next_card_id,
+		"card_type": card_type,
+		"title": title,
+		"description": description,
+		"icon_path": icon_path,
+		"source_id": source_id,
+		"choices": choices,
+	})
+	_next_card_id += 1
+
+func _format_cost_reward(cost: Dictionary, reward: Dictionary) -> String:
+	var parts: Array[String] = []
+	if not cost.is_empty():
+		parts.append("Cost: %s" % _format_delta_map(cost))
+	if not reward.is_empty():
+		parts.append("Reward: %s" % _format_delta_map(reward))
+	return " | ".join(parts)
+
+func _format_delta_map(values: Dictionary) -> String:
+	var parts: Array[String] = []
+	for key: String in values.keys():
+		parts.append("%s %s" % [key.capitalize(), values[key]])
+	return ", ".join(parts)

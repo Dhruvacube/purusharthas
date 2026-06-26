@@ -50,19 +50,16 @@ func invest_in_event(event_id: String, level: String) -> Dictionary:
 	var cost = inv.get("cost", {})
 	
 	for k in cost.keys():
-		if GlobalState.village_state.get(k, 0.0) < cost[k]:
+		if _get_village_resource(k) < float(cost[k]):
 			return {}
 			
 	for k in cost.keys():
-		GlobalState.village_state[k] -= cost[k]
+		_modify_village_resource(k, -float(cost[k]))
 		
 	var rewards = inv.get("rewards", {})
 	for k in rewards.keys():
 		var val = float(rewards[k])
-		if k == "morale" or k == "trust":
-			GlobalState.village_state[k] = clampf(GlobalState.village_state.get(k, 0.0) + val, 0.0, 100.0)
-		else:
-			GlobalState.village_state[k] = GlobalState.village_state.get(k, 0.0) + val
+		_modify_village_resource(k, val)
 			
 	event_completed.emit(event_id, rewards)
 	return rewards
@@ -70,3 +67,25 @@ func invest_in_event(event_id: String, level: String) -> Dictionary:
 func skip_event(event_id: String) -> void:
 	GlobalState.village_state["morale"] = maxf(0.0, GlobalState.village_state.get("morale", 60.0) - 2.0)
 	event_completed.emit(event_id, {"morale": -2.0})
+
+func _resource_key(resource: String) -> String:
+	match resource:
+		"food":
+			return "food_stored"
+		"culture":
+			return "culture_points"
+		_:
+			return resource
+
+func _get_village_resource(resource: String) -> float:
+	return float(GlobalState.village_state.get(_resource_key(resource), 0.0))
+
+func _modify_village_resource(resource: String, delta: float) -> void:
+	var key := _resource_key(resource)
+	var old_value := float(GlobalState.village_state.get(key, 0.0))
+	var new_value := old_value + delta
+	if key == "morale" or key == "trust":
+		new_value = clampf(new_value, 0.0, 100.0)
+	elif key == "population":
+		new_value = maxf(new_value, 0.0)
+	GlobalState.village_state[key] = int(new_value) if key == "population" else new_value

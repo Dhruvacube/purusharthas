@@ -1,0 +1,50 @@
+[
+  {
+    "id": "land_dispute",
+    "name": "Land Dispute",
+    "description": "Two prominent families are claiming ownership over a fertile piece of land near the river.",
+    "category": "land",
+    "urgency": "medium",
+    "choices": [
+      {
+        "id": "divide_equally",
+        "text": "Divide the land equally between them.",
+        "description": "A fair but unexciting compromise.",
+        "popular_support": 0.6,
+        "outcomes": {"resource_deltas": {}, "trust_delta": 2.0, "axis_shifts": {"dharma": 2.0}}
+      },
+      {
+        "id": "award_to_more_productive",
+        "text": "Award the land to the more productive family.",
+        "description": "Focus on overall village output over strict equality.",
+        "popular_support": 0.3,
+        "outcomes": {"resource_deltas": {"food": 20.0}, "trust_delta": -3.0, "axis_shifts": {"artha": 3.0, "dharma": -1.0}}
+      }
+    ],
+    "flavor_text": "Tempers flare under the banyan tree. A wise judgment is needed to restore harmony."
+  },
+  {
+    "id": "festival_budget",
+    "name": "Festival Budget",
+    "description": "The upcoming harvest festival approaches. Some demand a grand celebration, others argue we should save resources for hard times.",
+    "category": "social",
+    "urgency": "low",
+    "choices": [
+      {
+        "id": "grand_celebration",
+        "text": "Approve a grand celebration.",
+        "description": "Spend gold and food for a massive morale boost.",
+        "popular_support": 0.7,
+        "outcomes": {"resource_deltas": {"gold": -20.0, "food": -30.0, "morale": 15.0}, "trust_delta": 3.0, "axis_shifts": {"kama": 4.0}}
+      },
+      {
+        "id": "frugal_celebration",
+        "text": "Enforce a frugal celebration.",
+        "description": "Save resources, but disappoint the village.",
+        "popular_support": 0.2,
+        "outcomes": {"resource_deltas": {"morale": -10.0}, "trust_delta": -2.0, "axis_shifts": {"artha": 2.0, "kama": -2.0}}
+      }
+    ],
+    "flavor_text": "Joy and prudence weigh evenly on the scales. What shall the village prioritize?"
+  }
+]

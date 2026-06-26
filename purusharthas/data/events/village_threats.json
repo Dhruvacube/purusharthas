@@ -1,0 +1,56 @@
+[
+  {
+    "id": "drought",
+    "name": "Drought",
+    "description": "The rains have failed. The earth cracks, and crops wither under the relentless sun.",
+    "season": "kharif",
+    "probability": 0.1,
+    "severity_range": [1, 5],
+    "effects": {"food_production": -0.5, "morale": -10.0},
+    "choices": [
+      {
+        "id": "ration",
+        "text": "Ration water and food strictly.",
+        "description": "Impose strict rationing. Will heavily impact morale but preserve some food.",
+        "requirements": {},
+        "outcomes": {"morale": -15.0, "food_stored": 20.0, "probability": 1.0}
+      },
+      {
+        "id": "pray",
+        "text": "Hold a grand yajna for rain.",
+        "description": "Spend wealth and culture to appease the gods. Results are uncertain.",
+        "requirements": {"gold": 20},
+        "outcomes": {"morale": 5.0, "culture": -5.0, "probability": 0.4}
+      }
+    ],
+    "duration_seasons": 2,
+    "flavor_text": "The sun beats down unmercifully. We must endure."
+  },
+  {
+    "id": "dacoit_raid",
+    "name": "Dacoit Raid",
+    "description": "Armed bandits have been spotted on the village outskirts, eyeing our granary.",
+    "season": "any",
+    "probability": 0.05,
+    "severity_range": [2, 4],
+    "effects": {"morale": -5.0},
+    "choices": [
+      {
+        "id": "pay_tribute",
+        "text": "Pay them off.",
+        "description": "Offer gold and food to make them leave.",
+        "requirements": {"gold": 30, "food": 50},
+        "outcomes": {"gold": -30.0, "food_stored": -50.0, "trust": -5.0, "probability": 1.0}
+      },
+      {
+        "id": "fight_back",
+        "text": "Organize a militia to fight.",
+        "description": "Rally the villagers. Risk of casualties but could protect our wealth.",
+        "requirements": {"population": 20},
+        "outcomes": {"morale": 10.0, "trust": 5.0, "population": -2.0, "probability": 0.6}
+      }
+    ],
+    "duration_seasons": 1,
+    "flavor_text": "Dust clouds on the horizon signal trouble. We must act quickly."
+  }
+]

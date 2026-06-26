@@ -1,0 +1,46 @@
+[
+  {
+    "id": "earthen_pots",
+    "name": "Earthen Pots",
+    "description": "Simple but essential clay vessels for water and cooking.",
+    "workshop_type": "potter_workshop",
+    "materials": {},
+    "production_time": 1,
+    "sell_value": 2.0,
+    "culture_value": 0.5,
+    "trade_demand": 1.5
+  },
+  {
+    "id": "clay_idols",
+    "name": "Clay Idols",
+    "description": "Beautifully crafted murti used in household and temple worship.",
+    "workshop_type": "potter_workshop",
+    "materials": {},
+    "production_time": 1,
+    "sell_value": 5.0,
+    "culture_value": 2.0,
+    "trade_demand": 0.8
+  },
+  {
+    "id": "cotton_cloth",
+    "name": "Cotton Cloth",
+    "description": "Woven fabric essential for clothing and trade.",
+    "workshop_type": "weaver_hut",
+    "materials": {"cotton": 2},
+    "production_time": 1,
+    "sell_value": 10.0,
+    "culture_value": 1.0,
+    "trade_demand": 2.5
+  },
+  {
+    "id": "iron_tools",
+    "name": "Iron Tools",
+    "description": "Sturdy agricultural and construction implements.",
+    "workshop_type": "blacksmith_forge",
+    "materials": {},
+    "production_time": 1,
+    "sell_value": 15.0,
+    "culture_value": 0.5,
+    "trade_demand": 3.0
+  }
+]

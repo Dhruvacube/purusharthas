@@ -1,0 +1,36 @@
+[gd_scene load_steps=9 format=3 uid="uid://df6fxdp1c31h"]
+
+[ext_resource type="Script" path="res://layers/village/scripts/village_manager.gd" id="1_a0b1c"]
+[ext_resource type="Script" path="res://layers/village/scripts/building_system.gd" id="2_d3e4f"]
+[ext_resource type="Script" path="res://layers/village/scripts/labor_system.gd" id="3_g5h6i"]
+[ext_resource type="Script" path="res://layers/village/scripts/season_manager.gd" id="4_j7k8l"]
+[ext_resource type="Script" path="res://layers/village/scripts/panchayat_system.gd" id="5_m9n0o"]
+[ext_resource type="Script" path="res://layers/village/scripts/folk_event_system.gd" id="6_p1q2r"]
+[ext_resource type="Script" path="res://layers/village/scripts/threat_system.gd" id="7_s3t4u"]
+[ext_resource type="Script" path="res://layers/village/scripts/gram_swaraj.gd" id="8_v5w6x"]
+
+[node name="VillageLayer" type="Node2D" groups=["village_manager"]]
+script = ExtResource("1_a0b1c")
+
+[node name="BuildingSystem" type="Node" parent="."]
+script = ExtResource("2_d3e4f")
+
+[node name="LaborSystem" type="Node" parent="."]
+script = ExtResource("3_g5h6i")
+
+[node name="SeasonManager" type="Node" parent="."]
+script = ExtResource("4_j7k8l")
+
+[node name="PanchayatSystem" type="Node" parent="."]
+script = ExtResource("5_m9n0o")
+
+[node name="FolkEventSystem" type="Node" parent="."]
+script = ExtResource("6_p1q2r")
+
+[node name="ThreatSystem" type="Node" parent="."]
+script = ExtResource("7_s3t4u")
+
+[node name="GramSwaraj" type="Node" parent="."]
+script = ExtResource("8_v5w6x")
+
+[node name="TileMapLayer" type="TileMapLayer" parent="."]

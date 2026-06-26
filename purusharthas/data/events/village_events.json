@@ -1,0 +1,74 @@
+[
+  {
+    "id": "holi",
+    "name": "Holi",
+    "description": "The vibrant spring festival of colors, celebrating the triumph of good over evil.",
+    "season": "rabi",
+    "probability": 0.3,
+    "investment_levels": {
+      "modest": {
+        "cost": {"food": 10, "gold": 5},
+        "rewards": {"morale": 5.0, "culture": 2.0}
+      },
+      "standard": {
+        "cost": {"food": 25, "gold": 15},
+        "rewards": {"morale": 12.0, "culture": 5.0, "trust": 2.0}
+      },
+      "grand": {
+        "cost": {"food": 50, "gold": 40, "culture": 10},
+        "rewards": {"morale": 25.0, "culture": 15.0, "trust": 5.0, "trade_boost": 1.5}
+      }
+    },
+    "duration_days": 3,
+    "min_population": 15,
+    "flavor_text": "The air is filled with colored powder and joyous songs. The village comes alive in a vivid display of community spirit."
+  },
+  {
+    "id": "diwali",
+    "name": "Diwali",
+    "description": "The festival of lights, marking the victory of light over darkness.",
+    "season": "kharif",
+    "probability": 0.3,
+    "investment_levels": {
+      "modest": {
+        "cost": {"gold": 10},
+        "rewards": {"morale": 6.0, "culture": 3.0}
+      },
+      "standard": {
+        "cost": {"gold": 25, "food": 10},
+        "rewards": {"morale": 15.0, "culture": 8.0, "trust": 3.0}
+      },
+      "grand": {
+        "cost": {"gold": 60, "food": 30},
+        "rewards": {"morale": 30.0, "culture": 20.0, "trust": 8.0, "trade_boost": 2.0}
+      }
+    },
+    "duration_days": 5,
+    "min_population": 20,
+    "flavor_text": "Oil lamps illuminate every home, dispelling the shadows of the night. A sense of peace and prosperity settles over the village."
+  },
+  {
+    "id": "village_wedding",
+    "name": "Village Wedding",
+    "description": "Two prominent families are uniting in marriage.",
+    "season": "any",
+    "probability": 0.15,
+    "investment_levels": {
+      "modest": {
+        "cost": {"food": 15, "gold": 5},
+        "rewards": {"morale": 4.0, "trust": 1.0}
+      },
+      "standard": {
+        "cost": {"food": 30, "gold": 20},
+        "rewards": {"morale": 10.0, "trust": 4.0, "population_growth": 2}
+      },
+      "grand": {
+        "cost": {"food": 60, "gold": 50},
+        "rewards": {"morale": 20.0, "trust": 10.0, "culture": 5.0, "population_growth": 5}
+      }
+    },
+    "duration_days": 4,
+    "min_population": 30,
+    "flavor_text": "The sounds of the dhol and shehnai echo through the streets. A joyous union brings the community closer together."
+  }
+]

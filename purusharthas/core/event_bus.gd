@@ -39,6 +39,7 @@ signal layer_switched(from_layer: String, to_layer: String)
 signal game_started()
 signal game_paused()
 signal game_resumed()
+signal main_menu_opened()
 signal game_saved()
 signal game_loaded()
 #endregion

@@ -79,6 +79,8 @@ func _ready() -> void:
 func start_new_game() -> void:
 	GlobalState.reset()
 	TurnManager.from_save_data({"start_year": -321, "current_year": -321})
+	TurnManager.resume()
+	get_tree().paused = false
 
 	_unload_all_layers()
 	current_state = GameState.PLAYING
@@ -91,6 +93,26 @@ func start_new_game() -> void:
 		"A new civilisation begins in %s." % TurnManager.get_current_year_display(),
 		"info",
 	)
+
+
+## Load a saved game and restore the active gameplay scene.
+func load_saved_game(is_autosave: bool = false) -> bool:
+	var loaded := SaveSystem.load_game(is_autosave)
+	if not loaded:
+		EventBus.notification.emit(
+			"Load Failed",
+			"No saved game was found.",
+			"warning",
+		)
+		return false
+
+	TurnManager.resume()
+	get_tree().paused = false
+	_unload_all_layers()
+	current_state = GameState.PLAYING
+	current_layer = Layer.VILLAGE
+	_load_layer(Layer.VILLAGE)
+	return true
 
 
 ## Pause the game.  Time stops advancing; the EVENT state is handled separately.
@@ -137,6 +159,7 @@ func quit_to_menu() -> void:
 	current_state = GameState.MENU
 	TurnManager.pause()
 	get_tree().paused = false
+	EventBus.main_menu_opened.emit()
 
 #endregion
 

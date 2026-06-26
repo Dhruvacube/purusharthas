@@ -31,6 +31,7 @@ var _resource_labels: Dictionary = {}
 var _labor_sliders: Dictionary = {}
 var _labor_values: Dictionary = {}
 var _updating_labor: bool = false
+var _bind_attempts: int = 0
 
 var _time_label: Label
 var _unallocated_label: Label
@@ -62,11 +63,15 @@ func _bind_village_manager() -> void:
 	var node := get_tree().get_first_node_in_group("village_manager")
 	if node == null:
 		_update_all()
+		if int(GameManager.current_state) == 1 and _bind_attempts < 8:
+			_bind_attempts += 1
+			call_deferred("_bind_village_manager")
 		return
 
 	village_manager = node as VillageManager
 	if village_manager == null:
 		return
+	_bind_attempts = 0
 
 	if not village_manager.village_state_changed.is_connected(_on_village_state_changed):
 		village_manager.village_state_changed.connect(_on_village_state_changed)
@@ -234,15 +239,38 @@ func _build_bottom_bar() -> Control:
 	_style_panel(panel, Color(0.10, 0.07, 0.04, 0.86))
 
 	var row := HBoxContainer.new()
-	row.alignment = BoxContainer.ALIGNMENT_END
 	row.add_theme_constant_override("separation", 10)
 	panel.add_child(row)
+
+	row.add_child(_layer_button("Village", 0))
+	row.add_child(_layer_button("Governance", 1))
+	row.add_child(_layer_button("Civilisation", 2))
+	row.add_child(_layer_button("Pilgrim", 3))
+
+	var fill := Control.new()
+	fill.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(fill)
 
 	var cards_button := Button.new()
 	cards_button.text = "Open Decision"
 	cards_button.icon = _load_icon("warning")
 	cards_button.pressed.connect(_show_next_pending_card)
 	row.add_child(cards_button)
+
+	var save_button := Button.new()
+	save_button.text = "Save"
+	save_button.pressed.connect(_on_save_pressed)
+	row.add_child(save_button)
+
+	var load_button := Button.new()
+	load_button.text = "Load"
+	load_button.pressed.connect(_on_load_pressed)
+	row.add_child(load_button)
+
+	var menu_button := Button.new()
+	menu_button.text = "Menu"
+	menu_button.pressed.connect(_on_menu_pressed)
+	row.add_child(menu_button)
 
 	var end_button := Button.new()
 	end_button.text = "End Season"
@@ -251,6 +279,13 @@ func _build_bottom_bar() -> Control:
 	end_button.pressed.connect(_on_next_turn_pressed)
 	row.add_child(end_button)
 	return panel
+
+func _layer_button(text: String, layer: int) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.custom_minimum_size = Vector2(112, 40)
+	button.pressed.connect(_on_layer_pressed.bind(layer))
+	return button
 
 func _build_modal() -> void:
 	_modal_shade = ColorRect.new()
@@ -439,6 +474,19 @@ func _on_next_turn_pressed() -> void:
 		TurnManager.advance_season()
 	_update_all()
 	_show_next_pending_card()
+
+func _on_layer_pressed(layer: int) -> void:
+	GameManager.switch_to_layer(layer)
+	_update_all()
+
+func _on_save_pressed() -> void:
+	SaveSystem.save_game(false)
+
+func _on_load_pressed() -> void:
+	GameManager.load_saved_game(false)
+
+func _on_menu_pressed() -> void:
+	GameManager.quit_to_menu()
 
 func _show_next_pending_card() -> void:
 	if village_manager == null:

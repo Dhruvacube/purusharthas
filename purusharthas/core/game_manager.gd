@@ -223,7 +223,7 @@ func _load_layer(layer: Layer) -> void:
 
 	var instance: Node = scene.instantiate()
 	instance.name = "Layer_%s" % Layer.keys()[layer]
-	get_tree().root.add_child(instance)
+	get_tree().root.add_child.call_deferred(instance)
 	_layer_instances[layer] = instance
 
 

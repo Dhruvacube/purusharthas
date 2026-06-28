@@ -58,9 +58,9 @@ var _layer_instances: Dictionary = {}
 ## Village is always unlocked; others require minimum year offsets or axis values.
 var _layer_unlock_rules: Dictionary = {
 	Layer.VILLAGE: {"always": true},
-	Layer.GOVERNANCE: {"min_years_elapsed": 10},
-	Layer.CIVILISATION: {"min_years_elapsed": 30},
-	Layer.PILGRIM: {"min_years_elapsed": 5},
+	Layer.GOVERNANCE: {"always": true},
+	Layer.CIVILISATION: {"always": true},
+	Layer.PILGRIM: {"always": true},
 }
 #endregion
 

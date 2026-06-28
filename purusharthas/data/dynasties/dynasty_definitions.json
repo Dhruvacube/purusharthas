@@ -1,72 +1,42 @@
 [
   {
     "id": "maurya",
-    "name": "Maurya",
-    "capital": "Pataliputra",
-    "emblem": "res://assets/art/civilisation/dynasties/maurya.svg",
-    "color": "#CC7722",
-    "start_hex": "magadha",
-    "traits": ["Centralized administration", "Espionage network", "Military dominance"],
-    "victory_bias": "chakravartin",
-    "military": 8,
-    "culture": 5,
-    "trade": 5,
-    "dharma": 6
+    "name": "Maurya Empire",
+    "focus": "dharma",
+    "start_hex": 50,
+    "traits": ["bureaucracy", "spies"],
+    "color": "saffron"
   },
   {
     "id": "gupta",
-    "name": "Gupta",
-    "capital": "Ujjayini",
-    "emblem": "res://assets/art/civilisation/dynasties/gupta.svg",
-    "color": "#FFD700",
-    "start_hex": "malwa",
-    "traits": ["Astronomy", "Mathematics", "Courtly arts"],
-    "victory_bias": "kalakar",
-    "military": 5,
-    "culture": 9,
-    "trade": 6,
-    "dharma": 6
+    "name": "Gupta Empire",
+    "focus": "artha",
+    "start_hex": 45,
+    "traits": ["golden_age", "mathematics"],
+    "color": "gold"
   },
   {
     "id": "chola",
-    "name": "Chola",
-    "capital": "Thanjavur",
-    "emblem": "res://assets/art/civilisation/dynasties/chola.svg",
-    "color": "#275F8F",
-    "start_hex": "kaveri_delta",
-    "traits": ["Naval supremacy", "Temple construction", "Maritime trade"],
-    "victory_bias": "vaishya",
-    "military": 7,
-    "culture": 8,
-    "trade": 9,
-    "dharma": 5
+    "name": "Chola Empire",
+    "focus": "kama",
+    "start_hex": 120,
+    "traits": ["naval_power", "temple_builders"],
+    "color": "indigo"
   },
   {
     "id": "maratha",
-    "name": "Maratha",
-    "capital": "Pune",
-    "emblem": "res://assets/art/civilisation/dynasties/maratha.svg",
-    "color": "#FF9933",
-    "start_hex": "deccan",
-    "traits": ["Confederacy", "Rapid cavalry", "Hill forts"],
-    "victory_bias": "chakravartin",
-    "military": 8,
-    "culture": 5,
-    "trade": 6,
-    "dharma": 5
+    "name": "Maratha Confederacy",
+    "focus": "artha",
+    "start_hex": 90,
+    "traits": ["cavalry", "forts"],
+    "color": "forest_green"
   },
   {
     "id": "vijayanagara",
-    "name": "Vijayanagara",
-    "capital": "Hampi",
-    "emblem": "res://assets/art/civilisation/dynasties/vijayanagara.svg",
-    "color": "#228B22",
-    "start_hex": "tungabhadra",
-    "traits": ["Sacred architecture", "Market cities", "Fortified capitals"],
-    "victory_bias": "sarvamangala",
-    "military": 7,
-    "culture": 8,
-    "trade": 7,
-    "dharma": 8
+    "name": "Vijayanagara Empire",
+    "focus": "dharma",
+    "start_hex": 110,
+    "traits": ["patronage", "defense"],
+    "color": "ivory"
   }
 ]

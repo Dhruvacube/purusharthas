@@ -1,0 +1,37 @@
+[gd_scene load_steps=2 format=3 uid="uid://civhud0000000"]
+
+[ext_resource type="Script" path="res://ui/civilisation_hud.gd" id="1_c0d1e"]
+
+[node name="CivilisationHUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_c0d1e")
+
+[node name="InfoPanel" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_top = 100.0
+offset_bottom = 250.0
+grow_horizontal = 0
+color = Color(0.2, 0.1, 0.3, 0.8)
+
+[node name="Label" type="Label" parent="InfoPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Civilisation Info"

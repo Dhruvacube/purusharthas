@@ -1,42 +1,62 @@
 [
   {
     "id": "purohit",
-    "name": "Acharya Somadeva",
-    "role": "Purohit",
+    "title": "Purohit",
+    "name": "Acharya Vasishta",
     "domain": "dharma",
-    "portrait": "res://assets/art/governance/advisors/purohit.svg",
-    "personality": "Patient, ritual-minded, wary of greed.",
-    "loyalty": 62,
-    "influence": 70
+    "description": "The chief priest and spiritual advisor. He advocates for righteous conduct, religious observances, and maintaining the social order.",
+    "base_loyalty": 70.0,
+    "base_influence": 80.0,
+    "advice_bias": {
+      "dharma": 2.0,
+      "artha": 0.5,
+      "kama": 0.5,
+      "moksha": 1.5
+    }
   },
   {
     "id": "senapati",
-    "name": "Rudrasena",
-    "role": "Senapati",
+    "title": "Senapati",
+    "name": "General Bheema",
     "domain": "artha",
-    "portrait": "res://assets/art/governance/advisors/senapati.svg",
-    "personality": "Blunt, disciplined, protective of borders.",
-    "loyalty": 58,
-    "influence": 66
+    "description": "The supreme commander of the armed forces. He believes strength, discipline, and territorial security are paramount.",
+    "base_loyalty": 80.0,
+    "base_influence": 70.0,
+    "advice_bias": {
+      "dharma": 0.8,
+      "artha": 2.0,
+      "kama": 0.5,
+      "moksha": 0.2
+    }
   },
   {
     "id": "amatya",
-    "name": "Vishnugupta",
-    "role": "Amatya",
+    "title": "Amatya",
+    "name": "Minister Chanakya",
     "domain": "artha",
-    "portrait": "res://assets/art/governance/advisors/amatya.svg",
-    "personality": "Precise, frugal, attentive to treasury strain.",
-    "loyalty": 60,
-    "influence": 72
+    "description": "The chief minister of state and finance. He focuses on a full treasury, effective taxation, and diplomatic leverage.",
+    "base_loyalty": 60.0,
+    "base_influence": 90.0,
+    "advice_bias": {
+      "dharma": 0.5,
+      "artha": 2.5,
+      "kama": 1.0,
+      "moksha": 0.0
+    }
   },
   {
     "id": "vaishya",
-    "name": "Sethani Kamala",
-    "role": "Vaishya",
+    "title": "Shreshthi",
+    "name": "Merchant Dhanananda",
     "domain": "kama",
-    "portrait": "res://assets/art/governance/advisors/vaishya.svg",
-    "personality": "Worldly, diplomatic, alive to trade and art.",
-    "loyalty": 64,
-    "influence": 61
+    "description": "The head of the merchant guilds. He desires prosperity, thriving trade, patronage of the arts, and worldly comforts.",
+    "base_loyalty": 50.0,
+    "base_influence": 60.0,
+    "advice_bias": {
+      "dharma": 0.5,
+      "artha": 1.5,
+      "kama": 2.0,
+      "moksha": 0.0
+    }
   }
 ]

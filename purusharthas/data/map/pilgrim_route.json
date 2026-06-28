@@ -1,0 +1,26 @@
+[
+  {
+    "id": "shrine_kashi",
+    "name": "Kashi Vishwanath",
+    "type": "shrine",
+    "capacity": 500,
+    "facilities": ["ghat", "temple"],
+    "position": {"x": 800, "y": 200}
+  },
+  {
+    "id": "rest_prayagraj",
+    "name": "Prayagraj Sangam",
+    "type": "rest_house",
+    "capacity": 300,
+    "facilities": ["dharamshala"],
+    "position": {"x": 600, "y": 300}
+  },
+  {
+    "id": "shrine_mathura",
+    "name": "Mathura Krishna Janmabhoomi",
+    "type": "shrine",
+    "capacity": 400,
+    "facilities": ["temple", "market"],
+    "position": {"x": 400, "y": 250}
+  }
+]

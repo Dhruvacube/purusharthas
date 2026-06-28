@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://df6fxdp1c31h"]
+[gd_scene load_steps=11 format=3 uid="uid://b4y9qwf3m22a"]
 
 [ext_resource type="Script" path="res://layers/village/scripts/village_manager.gd" id="1_a0b1c"]
 [ext_resource type="Script" path="res://layers/village/scripts/building_system.gd" id="2_d3e4f"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://layers/village/scripts/threat_system.gd" id="7_s3t4u"]
 [ext_resource type="Script" path="res://layers/village/scripts/gram_swaraj.gd" id="8_v5w6x"]
 [ext_resource type="Script" path="res://layers/village/scripts/village_map_view.gd" id="9_map"]
+[ext_resource type="PackedScene" uid="uid://d3m03pxtuht7w" path="res://ui/village_hud.tscn" id="10_hud"]
 
 [node name="VillageLayer" type="Node2D" groups=["village_manager"]]
 script = ExtResource("1_a0b1c")
@@ -38,3 +39,7 @@ script = ExtResource("7_s3t4u")
 script = ExtResource("8_v5w6x")
 
 [node name="TileMapLayer" type="TileMapLayer" parent="."]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="VillageHUD" parent="CanvasLayer" instance=ExtResource("10_hud")]

@@ -34,10 +34,15 @@ func _ready() -> void:
 	call_deferred("_bind_systems")
 
 func _load_textures() -> void:
-	for terrain: String in TERRAIN_COLORS.keys():
-		var terrain_path := "res://assets/art/village/terrain/%s.svg" % terrain
-		if ResourceLoader.exists(terrain_path):
-			_terrain_textures[terrain] = load(terrain_path) as Texture2D
+	var terrain_mapping := {
+		"grass": "res://assets/art/village/tile_grass.jpg",
+		"path": "res://assets/art/village/tile_path.jpg",
+		"forest": "res://assets/art/village/tile_forest.jpg",
+	}
+	for terrain: String in terrain_mapping.keys():
+		var path := terrain_mapping[terrain] as String
+		if ResourceLoader.exists(path):
+			_terrain_textures[terrain] = load(path) as Texture2D
 
 	var building_ids := [
 		"kutcha_house",
@@ -56,10 +61,18 @@ func _load_textures() -> void:
 		"vaidya_clinic",
 		"panchayat_hall",
 	]
+	
+	var default_building_tex := "res://assets/art/village/tile_village.jpg"
+	var default_tex: Texture2D = null
+	if ResourceLoader.exists(default_building_tex):
+		default_tex = load(default_building_tex) as Texture2D
+
 	for building_id: String in building_ids:
 		var building_path := "res://assets/art/village/buildings/%s.svg" % building_id
 		if ResourceLoader.exists(building_path):
 			_building_textures[building_id] = load(building_path) as Texture2D
+		elif default_tex != null:
+			_building_textures[building_id] = default_tex
 
 func _bind_systems() -> void:
 	var root := get_parent()
@@ -116,7 +129,7 @@ func _draw_frame() -> void:
 	draw_rect(rect, Color(0.05, 0.03, 0.02, 1.0), false, 4.0)
 
 func _terrain_at(x: int, y: int) -> String:
-	var center := Vector2i(MAP_WIDTH / 2, MAP_HEIGHT / 2)
+	var center := Vector2i(int(float(MAP_WIDTH) / 2.0), int(float(MAP_HEIGHT) / 2.0))
 	var distance: int = abs(x - center.x) + abs(y - center.y)
 	if x == center.x or y == center.y:
 		return "path"

@@ -1,26 +1,49 @@
-[gd_scene load_steps=5 format=3 uid="uid://governancelayer001"]
+[gd_scene load_steps=6 format=3 uid="uid://df6fxgovc31h"]
 
-[ext_resource type="Script" path="res://layers/governance/scripts/governance_manager.gd" id="1_gov"]
-[ext_resource type="Script" path="res://layers/governance/scripts/council_system.gd" id="2_council"]
-[ext_resource type="Script" path="res://layers/governance/scripts/governance_map_view.gd" id="3_map"]
-[ext_resource type="Script" path="res://layers/governance/scripts/governance_ui.gd" id="4_ui"]
+[ext_resource type="Script" path="res://layers/governance/scripts/governance_manager.gd" id="1_a0b1c"]
+[ext_resource type="Script" path="res://layers/governance/scripts/council_system.gd" id="2_c0d1e"]
+[ext_resource type="Script" path="res://layers/governance/scripts/decade_manager.gd" id="3_e0f1g"]
+[ext_resource type="Script" path="res://layers/governance/scripts/succession_system.gd" id="4_g0h1i"]
+[ext_resource type="Script" path="res://layers/governance/scripts/governance_event_system.gd" id="5_i0j1k"]
+[ext_resource type="PackedScene" path="res://ui/governance_hud.tscn" id="6_k0l1m"]
 
-[node name="GovernanceLayer" type="Node2D" groups=["governance_manager"]]
-script = ExtResource("1_gov")
+[node name="GovernanceLayer" type="Node2D"]
+script = ExtResource("1_a0b1c")
 
 [node name="CouncilSystem" type="Node" parent="."]
-script = ExtResource("2_council")
+script = ExtResource("2_c0d1e")
 
-[node name="GovernanceMapView" type="Node2D" parent="."]
-script = ExtResource("3_map")
+[node name="DecadeManager" type="Node" parent="."]
+script = ExtResource("3_e0f1g")
 
-[node name="GovernanceCanvas" type="CanvasLayer" parent="."]
+[node name="SuccessionSystem" type="Node" parent="."]
+script = ExtResource("4_g0h1i")
 
-[node name="GovernanceUI" type="Control" parent="GovernanceCanvas"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+[node name="GovernanceEventSystem" type="Node" parent="."]
+script = ExtResource("5_i0j1k")
+
+[node name="Map" type="ColorRect" parent="."]
+offset_right = 1920.0
+offset_bottom = 1080.0
+color = Color(0.1, 0.1, 0.1, 1)
+
+[node name="MapLabel" type="Label" parent="Map"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("4_ui")
+text = "Kingdom Map Placeholder"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="GovernanceHUD" parent="UILayer" instance=ExtResource("6_k0l1m")]

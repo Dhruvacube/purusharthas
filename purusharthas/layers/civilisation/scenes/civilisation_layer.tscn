@@ -1,0 +1,53 @@
+[gd_scene load_steps=8 format=3 uid="uid://civlayer00000"]
+
+[ext_resource type="Script" path="res://layers/civilisation/scripts/civilisation_manager.gd" id="1_a0b1c"]
+[ext_resource type="Script" path="res://layers/civilisation/scripts/dynasty_system.gd" id="2_c0d1e"]
+[ext_resource type="Script" path="res://layers/civilisation/scripts/diplomacy_system.gd" id="3_e0f1g"]
+[ext_resource type="Script" path="res://layers/civilisation/scripts/military_system.gd" id="4_g0h1i"]
+[ext_resource type="Script" path="res://layers/civilisation/scripts/culture_system.gd" id="5_i0j1k"]
+[ext_resource type="Script" path="res://layers/civilisation/scripts/civ_ai.gd" id="6_k0l1m"]
+[ext_resource type="PackedScene" path="res://ui/civilisation_hud.tscn" id="7_m0n1o"]
+
+[node name="CivilisationLayer" type="Node2D"]
+script = ExtResource("1_a0b1c")
+
+[node name="DynastySystem" type="Node" parent="."]
+script = ExtResource("2_c0d1e")
+
+[node name="DiplomacySystem" type="Node" parent="."]
+script = ExtResource("3_e0f1g")
+
+[node name="MilitarySystem" type="Node" parent="."]
+script = ExtResource("4_g0h1i")
+
+[node name="CultureSystem" type="Node" parent="."]
+script = ExtResource("5_i0j1k")
+
+[node name="CivAI" type="Node" parent="."]
+script = ExtResource("6_k0l1m")
+
+[node name="Map" type="ColorRect" parent="."]
+offset_right = 1920.0
+offset_bottom = 1080.0
+color = Color(0.15, 0.1, 0.25, 1)
+
+[node name="MapLabel" type="Label" parent="Map"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "Subcontinent Hex Map Placeholder"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="CivilisationHUD" parent="UILayer" instance=ExtResource("7_m0n1o")]

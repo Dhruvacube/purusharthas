@@ -70,8 +70,8 @@ func auto_allocate() -> void:
 	if total == 0:
 		return
 	var cats = allocation.keys()
-	var per_cat = total / cats.size()
-	var rem = total % cats.size()
+	var per_cat: int = int(total / cats.size())
+	var rem: int = total - (per_cat * cats.size())
 	
 	for i in range(cats.size()):
 		var amt = per_cat

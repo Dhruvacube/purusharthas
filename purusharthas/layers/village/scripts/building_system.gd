@@ -178,4 +178,7 @@ func _modify_village_resource(resource: String, delta: float) -> void:
 		new_value = clampf(new_value, 0.0, 100.0)
 	elif key == "population":
 		new_value = maxf(new_value, 0.0)
-	GlobalState.village_state[key] = int(new_value) if key == "population" else new_value
+	if key == "population":
+		GlobalState.village_state[key] = int(new_value)
+	else:
+		GlobalState.village_state[key] = new_value

@@ -111,10 +111,10 @@ func get_building_summary() -> Dictionary:
 	return summary
 
 func place_building_next_available(building_id: String) -> bool:
-	var position := _find_next_buildable_tile(building_id)
-	if position == Vector2i(-1, -1):
+	var build_pos := _find_next_buildable_tile(building_id)
+	if build_pos == Vector2i(-1, -1):
 		return false
-	var placed := building_system.place_building(building_id, position)
+	var placed := building_system.place_building(building_id, build_pos)
 	if placed:
 		village_state_changed.emit()
 	return placed
@@ -135,7 +135,7 @@ func get_food_status() -> String:
 	else:
 		return "surplus"
 
-func _on_season_changed(season_name: String, year: int) -> void:
+func _on_season_changed(_season_name: String, _year: int) -> void:
 	start_season()
 
 func resolve_pending_card(card_id: int, choice_id: String) -> Dictionary:
@@ -190,19 +190,19 @@ func _find_next_buildable_tile(building_id: String) -> Vector2i:
 	var state := GlobalState.village_state
 	var width := int(state.get("map_width", 30))
 	var height := int(state.get("map_height", 30))
-	var center := Vector2i(width / 2, height / 2)
+	var center := Vector2i(int(float(width) / 2.0), int(float(height) / 2.0))
 	var best_position := Vector2i(-1, -1)
 	var best_distance := 999999
 
 	for y in range(3, height - 3):
 		for x in range(3, width - 3):
-			var position := Vector2i(x, y)
-			if not building_system.can_place_building(building_id, position):
+			var tile_pos := Vector2i(x, y)
+			if not building_system.can_place_building(building_id, tile_pos):
 				continue
-			var distance: int = abs(position.x - center.x) + abs(position.y - center.y)
+			var distance: int = abs(tile_pos.x - center.x) + abs(tile_pos.y - center.y)
 			if distance < best_distance:
 				best_distance = distance
-				best_position = position
+				best_position = tile_pos
 	return best_position
 
 func _consume_food() -> void:

@@ -135,7 +135,7 @@ func _propagate_village_famine(data: Dictionary) -> void:
 
 ## Governance temple tax exemption -> route donations surge, village temple
 ## upkeep free, culture rise in civ.
-func _propagate_governance_temple_tax_exemption(data: Dictionary) -> void:
+func _propagate_governance_temple_tax_exemption(_data: Dictionary) -> void:
 	emit_cross_layer_effect("governance", "pilgrim", "temple_tax_donations_surge", {
 		"target_resource": "treasury",
 		"magnitude": 15.0,

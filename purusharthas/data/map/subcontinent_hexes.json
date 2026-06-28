@@ -1,25 +1,47 @@
 [
-  {"id": "gandhara", "name": "Gandhara", "q": -3, "r": -2, "terrain": "mountain", "resources": ["horses"], "culture_level": 3},
-  {"id": "punjab", "name": "Punjab", "q": -2, "r": -2, "terrain": "plains", "resources": ["wheat"], "culture_level": 4},
-  {"id": "kurukshetra", "name": "Kurukshetra", "q": -1, "r": -2, "terrain": "plains", "resources": ["grain"], "culture_level": 5},
-  {"id": "magadha", "name": "Magadha", "q": 0, "r": -2, "terrain": "river", "resources": ["iron", "rice"], "culture_level": 7},
-  {"id": "kamarupa", "name": "Kamarupa", "q": 1, "r": -2, "terrain": "forest", "resources": ["silk"], "culture_level": 5},
-  {"id": "sindhu", "name": "Sindhu", "q": -3, "r": -1, "terrain": "river", "resources": ["dates"], "culture_level": 4},
-  {"id": "rajasthana", "name": "Rajasthana", "q": -2, "r": -1, "terrain": "desert", "resources": ["salt"], "culture_level": 3},
-  {"id": "malwa", "name": "Malwa", "q": -1, "r": -1, "terrain": "plains", "resources": ["cotton"], "culture_level": 6},
-  {"id": "kosala", "name": "Kosala", "q": 0, "r": -1, "terrain": "forest", "resources": ["timber"], "culture_level": 5},
-  {"id": "anga", "name": "Anga", "q": 1, "r": -1, "terrain": "river", "resources": ["rice"], "culture_level": 5},
-  {"id": "saurashtra", "name": "Saurashtra", "q": -3, "r": 0, "terrain": "coast", "resources": ["ports"], "culture_level": 5},
-  {"id": "avanti", "name": "Avanti", "q": -2, "r": 0, "terrain": "plains", "resources": ["guilds"], "culture_level": 6},
-  {"id": "vidarbha", "name": "Vidarbha", "q": -1, "r": 0, "terrain": "forest", "resources": ["copper"], "culture_level": 4},
-  {"id": "kalinga", "name": "Kalinga", "q": 0, "r": 0, "terrain": "coast", "resources": ["elephants"], "culture_level": 6},
-  {"id": "banga", "name": "Banga", "q": 1, "r": 0, "terrain": "delta", "resources": ["rice", "boats"], "culture_level": 6},
-  {"id": "konkan", "name": "Konkan", "q": -3, "r": 1, "terrain": "coast", "resources": ["fish"], "culture_level": 4},
-  {"id": "deccan", "name": "Deccan", "q": -2, "r": 1, "terrain": "plateau", "resources": ["horses", "iron"], "culture_level": 5},
-  {"id": "tungabhadra", "name": "Tungabhadra", "q": -1, "r": 1, "terrain": "river", "resources": ["stone", "temples"], "culture_level": 7},
-  {"id": "andhra", "name": "Andhra", "q": 0, "r": 1, "terrain": "coast", "resources": ["ports", "rice"], "culture_level": 6},
-  {"id": "kalinga_coast", "name": "Kalinga Coast", "q": 1, "r": 1, "terrain": "coast", "resources": ["ships"], "culture_level": 5},
-  {"id": "kerala", "name": "Kerala", "q": -2, "r": 2, "terrain": "coast", "resources": ["pepper"], "culture_level": 6},
-  {"id": "kaveri_delta", "name": "Kaveri Delta", "q": -1, "r": 2, "terrain": "delta", "resources": ["rice", "bronze"], "culture_level": 8},
-  {"id": "pandya", "name": "Pandya", "q": 0, "r": 2, "terrain": "coast", "resources": ["pearls"], "culture_level": 6}
+  {
+    "id": 45,
+    "q": 0,
+    "r": 0,
+    "terrain": "plains",
+    "owner": "gupta",
+    "population": 1000,
+    "culture_level": 50
+  },
+  {
+    "id": 50,
+    "q": 1,
+    "r": 0,
+    "terrain": "forest",
+    "owner": "maurya",
+    "population": 800,
+    "culture_level": 40
+  },
+  {
+    "id": 90,
+    "q": 0,
+    "r": 1,
+    "terrain": "hills",
+    "owner": "maratha",
+    "population": 1200,
+    "culture_level": 30
+  },
+  {
+    "id": 110,
+    "q": 1,
+    "r": 1,
+    "terrain": "plains",
+    "owner": "vijayanagara",
+    "population": 1500,
+    "culture_level": 60
+  },
+  {
+    "id": 120,
+    "q": 0,
+    "r": 2,
+    "terrain": "coast",
+    "owner": "chola",
+    "population": 2000,
+    "culture_level": 80
+  }
 ]

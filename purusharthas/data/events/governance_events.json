@@ -1,118 +1,137 @@
 [
   {
-    "id": "temple_tax_petition",
-    "title": "Temple Tax Petition",
-    "description": "Temple trustees ask for a tax exemption, promising care for pilgrims and village ritual life.",
-    "recommended_by": "purohit",
+    "id": "famine_relief",
+    "title": "The Great Drought",
+    "description": "A severe drought has struck the eastern provinces. The peasants are starving, and the local governors beg for treasury funds to buy grain.",
     "choices": [
       {
-        "id": "grant_exemption",
-        "text": "Grant the exemption.",
-        "axis_shifts": {"dharma": 6, "moksha": 4, "artha": -4},
-        "resource_deltas": {"treasury": -35, "culture": 8},
-        "advisor_loyalty": {"purohit": 8, "amatya": -5},
-        "cross_layer_event": "governance_temple_tax_exemption"
+        "id": "open_granaries",
+        "text": "Open the royal granaries and distribute free grain.",
+        "advisor_support": ["purohit"],
+        "outcomes": {
+          "axis_shifts": { "dharma": 10.0, "artha": -15.0 },
+          "resource_deltas": { "treasury": -200.0, "food": -100.0, "morale": 20.0 }
+        }
       },
       {
-        "id": "partial_exemption",
-        "text": "Grant a limited exemption.",
-        "axis_shifts": {"dharma": 3, "moksha": 2, "artha": -1},
-        "resource_deltas": {"treasury": -12, "culture": 4},
-        "advisor_loyalty": {"purohit": 3, "amatya": 1}
+        "id": "tax_relief",
+        "text": "Provide tax relief but do not give grain. They must survive on their own.",
+        "advisor_support": ["amatya", "vaishya"],
+        "outcomes": {
+          "axis_shifts": { "dharma": 5.0, "artha": -5.0 },
+          "resource_deltas": { "treasury": -50.0, "morale": 5.0 }
+        }
       },
       {
-        "id": "deny_petition",
-        "text": "Deny the petition.",
-        "axis_shifts": {"artha": 4, "dharma": -3, "moksha": -2},
-        "resource_deltas": {"treasury": 20},
-        "advisor_loyalty": {"purohit": -8, "amatya": 5}
+        "id": "ignore",
+        "text": "The treasury is for the state, not the weak. Ignore their pleas.",
+        "advisor_support": ["senapati"],
+        "outcomes": {
+          "axis_shifts": { "dharma": -20.0, "artha": 10.0 },
+          "resource_deltas": { "population": -50, "morale": -30.0 }
+        }
       }
     ]
   },
   {
-    "id": "frontier_raid",
-    "title": "Frontier Raid",
-    "description": "A border village reports raiders moving through the scrublands. The Senapati asks for immediate mobilization.",
-    "recommended_by": "senapati",
+    "id": "foreign_merchants",
+    "title": "The Yavana Merchants",
+    "description": "A delegation of wealthy foreign merchants seeks permission to establish a permanent trading enclave in the capital.",
     "choices": [
       {
-        "id": "mobilize_army",
-        "text": "Mobilize the army.",
-        "axis_shifts": {"artha": 5, "dharma": 1, "kama": -2},
-        "resource_deltas": {"treasury": -40, "morale": 4},
-        "advisor_loyalty": {"senapati": 8, "amatya": -3}
+        "id": "welcome_them",
+        "text": "Welcome them with open arms. Tax their goods and enjoy their exotic wares.",
+        "advisor_support": ["amatya", "vaishya"],
+        "outcomes": {
+          "axis_shifts": { "kama": 15.0, "artha": 10.0, "dharma": -5.0 },
+          "resource_deltas": { "treasury": 150.0, "culture": 5.0 }
+        }
       },
       {
-        "id": "fortify_villages",
-        "text": "Fortify nearby villages.",
-        "axis_shifts": {"dharma": 4, "artha": 1},
-        "resource_deltas": {"treasury": -25, "morale": 6},
-        "advisor_loyalty": {"senapati": 3, "purohit": 2}
+        "id": "restrict_them",
+        "text": "Allow them, but restrict them to the outskirts. We must protect our culture.",
+        "advisor_support": ["senapati", "purohit"],
+        "outcomes": {
+          "axis_shifts": { "dharma": 5.0, "artha": 5.0 },
+          "resource_deltas": { "treasury": 50.0 }
+        }
       },
       {
-        "id": "pay_tribute",
-        "text": "Pay tribute to avoid bloodshed.",
-        "axis_shifts": {"moksha": 2, "artha": -5, "dharma": -2},
-        "resource_deltas": {"treasury": -55, "morale": -6},
-        "advisor_loyalty": {"senapati": -8, "purohit": 2}
+        "id": "banish_them",
+        "text": "Expel them. Their foreign ways will corrupt our society.",
+        "advisor_support": ["purohit"],
+        "outcomes": {
+          "axis_shifts": { "dharma": 10.0, "kama": -10.0, "artha": -5.0 },
+          "resource_deltas": { "culture": -5.0 }
+        }
       }
     ]
   },
   {
-    "id": "guild_charter",
-    "title": "Guild Charter",
-    "description": "Craft guilds request royal recognition in exchange for better roads, weights, and caravan support.",
-    "recommended_by": "vaishya",
+    "id": "wandering_sage",
+    "title": "The Ascetic's Arrival",
+    "description": "A renowned ascetic has arrived at the palace gates, preaching the futility of material wealth and demanding the King renounce his luxuries.",
     "choices": [
       {
-        "id": "royal_charter",
-        "text": "Issue a royal charter.",
-        "axis_shifts": {"artha": 5, "kama": 5, "dharma": 1},
-        "resource_deltas": {"treasury": 35, "culture": 5},
-        "advisor_loyalty": {"vaishya": 8, "amatya": 3}
+        "id": "embrace_teachings",
+        "text": "Listen to him and donate a large sum of gold to his monastic order.",
+        "advisor_support": ["purohit"],
+        "outcomes": {
+          "axis_shifts": { "moksha": 20.0, "kama": -15.0, "artha": -10.0 },
+          "resource_deltas": { "treasury": -100.0, "culture": 10.0 }
+        }
       },
       {
-        "id": "strict_regulation",
-        "text": "Recognize them under strict regulation.",
-        "axis_shifts": {"artha": 4, "dharma": 3, "kama": -2},
-        "resource_deltas": {"treasury": 18},
-        "advisor_loyalty": {"amatya": 5, "vaishya": -3}
+        "id": "respectful_dismissal",
+        "text": "Offer him a modest meal and respectfully send him on his way.",
+        "advisor_support": ["amatya"],
+        "outcomes": {
+          "axis_shifts": { "dharma": 5.0, "moksha": 5.0 },
+          "resource_deltas": { "food": -10.0 }
+        }
       },
       {
-        "id": "reject_guilds",
-        "text": "Reject the guild petition.",
-        "axis_shifts": {"artha": -2, "kama": -5},
-        "resource_deltas": {"culture": -4},
-        "advisor_loyalty": {"vaishya": -8}
+        "id": "imprison",
+        "text": "Imprison him for inciting unrest and insulting the crown.",
+        "advisor_support": ["senapati", "vaishya"],
+        "outcomes": {
+          "axis_shifts": { "dharma": -20.0, "moksha": -20.0, "artha": 5.0 },
+          "resource_deltas": { "morale": -15.0 }
+        }
       }
     ]
   },
   {
-    "id": "sage_arrival",
-    "title": "Arrival of a Sage",
-    "description": "A wandering sage arrives with followers, asking for land to establish an ashram.",
-    "recommended_by": "purohit",
+    "id": "border_skirmish",
+    "title": "Clash on the Border",
+    "description": "A neighboring kingdom has raided our border villages, stealing cattle and burning crops.",
     "choices": [
       {
-        "id": "grant_land",
-        "text": "Grant land and patronage.",
-        "axis_shifts": {"moksha": 7, "dharma": 4, "artha": -3},
-        "resource_deltas": {"treasury": -25, "culture": 6},
-        "advisor_loyalty": {"purohit": 6, "amatya": -2}
+        "id": "retaliate",
+        "text": "Mobilize the army and strike back with overwhelming force.",
+        "advisor_support": ["senapati"],
+        "outcomes": {
+          "axis_shifts": { "artha": 15.0, "dharma": -5.0 },
+          "resource_deltas": { "treasury": -150.0, "morale": 10.0 }
+        }
       },
       {
-        "id": "invite_to_court",
-        "text": "Invite the sage to court.",
-        "axis_shifts": {"moksha": 4, "kama": 3},
-        "resource_deltas": {"culture": 8},
-        "advisor_loyalty": {"purohit": 3, "vaishya": 2}
+        "id": "diplomacy",
+        "text": "Send envoys to demand reparations and negotiate peace.",
+        "advisor_support": ["amatya"],
+        "outcomes": {
+          "axis_shifts": { "dharma": 10.0, "artha": 5.0 },
+          "resource_deltas": { "treasury": -20.0 }
+        }
       },
       {
-        "id": "politely_decline",
-        "text": "Politely decline.",
-        "axis_shifts": {"artha": 2, "moksha": -4},
-        "resource_deltas": {"treasury": 8},
-        "advisor_loyalty": {"purohit": -5, "amatya": 2}
+        "id": "fortify",
+        "text": "Do not retaliate, but heavily fortify the border to prevent future raids.",
+        "advisor_support": ["senapati", "purohit"],
+        "outcomes": {
+          "axis_shifts": { "artha": 5.0, "dharma": 5.0 },
+          "resource_deltas": { "treasury": -100.0, "morale": 5.0 }
+        }
       }
     ]
   }

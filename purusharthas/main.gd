@@ -1,7 +1,7 @@
 extends Node
 
 const MAIN_MENU_SCENE := preload("res://ui/screens/main_menu.tscn")
-const VILLAGE_HUD_SCENE := preload("res://ui/village_hud.tscn")
+const GLOBAL_HUD_SCENE := preload("res://ui/global_hud.tscn")
 
 var _main_menu: Control
 var _hud: Control
@@ -24,7 +24,7 @@ func _hide_main_menu() -> void:
 
 func _ensure_hud() -> void:
 	if _hud == null:
-		_hud = VILLAGE_HUD_SCENE.instantiate() as Control
+		_hud = GLOBAL_HUD_SCENE.instantiate() as Control
 		add_child(_hud)
 	_hud.visible = true
 
@@ -44,3 +44,16 @@ func _on_game_loaded() -> void:
 func _on_main_menu_opened() -> void:
 	_remove_hud()
 	_show_main_menu()
+
+func _input(event: InputEvent) -> void:
+	if GameManager.current_state != GameManager.GameState.PLAYING:
+		return
+		
+	if event.is_action_pressed("layer_village"):
+		GameManager.switch_to_layer(GameManager.Layer.VILLAGE)
+	elif event.is_action_pressed("layer_governance"):
+		GameManager.switch_to_layer(GameManager.Layer.GOVERNANCE)
+	elif event.is_action_pressed("layer_civilisation"):
+		GameManager.switch_to_layer(GameManager.Layer.CIVILISATION)
+	elif event.is_action_pressed("layer_pilgrim"):
+		GameManager.switch_to_layer(GameManager.Layer.PILGRIM)

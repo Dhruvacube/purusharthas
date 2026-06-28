@@ -88,6 +88,7 @@ func start_new_game() -> void:
 	_load_layer(Layer.VILLAGE)
 
 	EventBus.game_started.emit()
+	EventBus.layer_switched.emit("Unknown", get_current_layer_name())
 	EventBus.notification.emit(
 		"Welcome",
 		"A new civilisation begins in %s." % TurnManager.get_current_year_display(),
@@ -112,6 +113,7 @@ func load_saved_game(is_autosave: bool = false, slot: int = 1) -> bool:
 	current_state = GameState.PLAYING
 	current_layer = Layer.VILLAGE
 	_load_layer(Layer.VILLAGE)
+	EventBus.layer_switched.emit("Unknown", get_current_layer_name())
 	return true
 
 
